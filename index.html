@@ -3,38 +3,478 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>小学校理科クイズマスター</title>
+    <title>理科クイズマスター | フル・コンテンツ</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;900&display=swap');
         
         body {
             font-family: 'M PLUS Rounded 1c', sans-serif;
-            background-color: #f0fdf4;
-            color: #374151;
+            background-color: #f8fafc;
+            color: #1e293b;
             margin: 0;
             padding: 0;
-            overflow: hidden;
             user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .app-container {
             height: 100vh;
             display: flex;
             flex-direction: column;
-            max-width: 600px;
+            max-width: 500px;
             margin: 0 auto;
-            background: white;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            background: #ffffff;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
         }
 
         .scroll-area {
             flex: 1;
             overflow-y: auto;
-            padding: 20px;
+            padding: 1.5rem;
             -webkit-overflow-scrolling: touch;
         }
 
+        .btn-press {
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .btn-press:active {
+            transform: scale(0.95);
+        }
+
+        .grade-card {
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        .grade-card::after {
+            content: "";
+            position: absolute;
+            top: -20%;
+            right: -10%;
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 50%;
+            z-index: -1;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            width: 180px;
+            height: 180px;
+            margin: 0 auto;
+        }
+        .chart-center-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .progress-glow {
+            box-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- ヘッダー -->
+        <header class="bg-white border-b border-slate-100 p-4 shrink-0">
+            <div class="flex justify-between items-center mb-3">
+                <h1 class="text-xl font-black text-slate-800 tracking-tight">理科クイズマスター</h1>
+                <span id="badge-rank" class="bg-yellow-100 text-yellow-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider">ビギナー</span>
+            </div>
+            <div class="space-y-1">
+                <div class="flex justify-between text-[10px] font-bold text-slate-400">
+                    <span>TOTAL PROGRESS</span>
+                    <span id="total-percent-text">0%</span>
+                </div>
+                <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                    <div id="total-progress-bar" class="bg-gradient-to-r from-green-400 to-emerald-500 h-full transition-all duration-1000 progress-glow" style="width: 0%"></div>
+                </div>
+            </div>
+        </header>
+
+        <!-- メイン表示エリア -->
+        <main id="view-container" class="scroll-area">
+            
+            <!-- 【1】ホーム画面 -->
+            <div id="view-home" class="space-y-6">
+                <section class="bg-slate-50 rounded-3xl p-6 border border-slate-100">
+                    <h3 class="text-xs font-black text-slate-400 mb-4 text-center tracking-widest uppercase">Clear Status</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="mainChart"></canvas>
+                        <div class="chart-center-text">
+                            <div id="total-count-display" class="text-3xl font-black text-slate-700">0</div>
+                            <div class="text-[8px] font-bold text-slate-400">UNITS CLEAR</div>
+                        </div>
+                    </div>
+                </section>
+                
+                <div class="grid grid-cols-1 gap-3">
+                    <button onclick="app.showUnits('3')" class="btn-press grade-card bg-amber-400 text-white p-5 rounded-2xl flex justify-between items-center shadow-lg shadow-amber-100">
+                        <div class="text-left">
+                            <div class="text-[10px] font-bold opacity-80 uppercase">Grade 3</div>
+                            <div class="text-xl font-black">3年生</div>
+                        </div>
+                        <div id="stat-3" class="text-xs font-bold bg-black/10 px-3 py-1 rounded-full">0/10</div>
+                    </button>
+
+                    <button onclick="app.showUnits('4')" class="btn-press grade-card bg-orange-400 text-white p-5 rounded-2xl flex justify-between items-center shadow-lg shadow-orange-100">
+                        <div class="text-left">
+                            <div class="text-[10px] font-bold opacity-80 uppercase">Grade 4</div>
+                            <div class="text-xl font-black">4年生</div>
+                        </div>
+                        <div id="stat-4" class="text-xs font-bold bg-black/10 px-3 py-1 rounded-full">0/8</div>
+                    </button>
+
+                    <button onclick="app.showUnits('5')" class="btn-press grade-card bg-sky-400 text-white p-5 rounded-2xl flex justify-between items-center shadow-lg shadow-sky-100">
+                        <div class="text-left">
+                            <div class="text-[10px] font-bold opacity-80 uppercase">Grade 5</div>
+                            <div class="text-xl font-black">5年生</div>
+                        </div>
+                        <div id="stat-5" class="text-xs font-bold bg-black/10 px-3 py-1 rounded-full">0/9</div>
+                    </button>
+
+                    <button onclick="app.showUnits('6')" class="btn-press grade-card bg-indigo-500 text-white p-5 rounded-2xl flex justify-between items-center shadow-lg shadow-indigo-100">
+                        <div class="text-left">
+                            <div class="text-[10px] font-bold opacity-80 uppercase">Grade 6</div>
+                            <div class="text-xl font-black">6年生</div>
+                        </div>
+                        <div id="stat-6" class="text-xs font-bold bg-black/10 px-3 py-1 rounded-full">0/9</div>
+                    </button>
+                </div>
+
+                <div class="text-center pt-2">
+                    <button onclick="app.resetData()" class="text-[10px] text-slate-300 hover:text-red-400 font-bold tracking-tighter">RESET ALL DATA</button>
+                </div>
+            </div>
+
+            <!-- 【2】単元選択画面 -->
+            <div id="view-units" class="hidden space-y-4 pb-8">
+                <div class="flex items-center gap-3">
+                    <button onclick="app.showHome()" class="p-2 bg-slate-100 rounded-xl text-slate-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
+                    </button>
+                    <h2 id="current-grade-title" class="text-xl font-black text-slate-800"></h2>
+                </div>
+                <div id="unit-list" class="space-y-2.5"></div>
+            </div>
+
+            <!-- 【3】クイズ画面 -->
+            <div id="view-quiz" class="hidden pb-8">
+                <div class="flex justify-between items-center mb-6">
+                    <div id="quiz-progress" class="text-[10px] font-black text-slate-400 tracking-widest uppercase">QUESTION 1/5</div>
+                    <div id="quiz-score-badge" class="bg-orange-100 text-orange-600 text-[10px] font-bold px-3 py-1 rounded-full">0 PTS</div>
+                </div>
+                <div class="bg-white border-2 border-slate-100 p-6 rounded-3xl shadow-sm mb-6 min-h-[160px] flex flex-col justify-center">
+                    <p id="question-text" class="text-lg font-bold leading-relaxed text-slate-700"></p>
+                </div>
+                <div id="options-container" class="space-y-3"></div>
+                
+                <div id="feedback-area" class="hidden mt-8">
+                    <div id="result-label" class="text-center text-2xl font-black mb-4"></div>
+                    <div class="p-5 bg-slate-50 rounded-2xl mb-6 border border-slate-100">
+                        <p class="text-[10px] font-black text-slate-400 mb-2 tracking-widest uppercase">Explanation</p>
+                        <p id="explanation-text" class="text-sm leading-relaxed text-slate-600"></p>
+                    </div>
+                    <button onclick="app.nextQuestion()" class="btn-press w-full bg-slate-800 text-white py-4 rounded-2xl font-bold text-lg shadow-lg">つぎへ進む</button>
+                </div>
+            </div>
+
+            <!-- 【4】結果画面 -->
+            <div id="view-result" class="hidden text-center py-6">
+                <div class="bg-slate-50 p-8 rounded-[3rem] border border-slate-100 mb-8">
+                    <div class="text-6xl mb-6 drop-shadow-sm" id="result-emoji">🎉</div>
+                    <div id="final-score" class="text-6xl font-black text-slate-800 mb-2">100</div>
+                    <div class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6">Points Scored</div>
+                    <p id="result-msg" class="font-bold text-slate-500 leading-relaxed"></p>
+                </div>
+                <div class="grid grid-cols-1 gap-3">
+                    <button id="retry-btn" onclick="app.retryCurrentUnit()" class="btn-press w-full bg-orange-400 text-white py-4 rounded-2xl font-bold">リトライ</button>
+                    <button onclick="app.showUnits(app.currentGrade)" class="btn-press w-full bg-white border-2 border-slate-100 text-slate-500 py-4 rounded-2xl font-bold">リストにもどる</button>
+                </div>
+            </div>
+
+        </main>
+        
+        <footer class="p-4 text-[9px] text-slate-300 font-bold text-center border-t border-slate-50 shrink-0 uppercase tracking-[0.2em]">
+            Science Quiz Master Dashboard v2.5
+        </footer>
+    </div>
+
+    <script>
+        const GRADE_UNITS = {
+            "3": ["生き物をさがそう", "チョウを育てよう", "風やゴムの力", "光の性質", "電気の通り道", "重さをはかろう", "太陽の動き", "音のふしぎ", "じしゃくのせいしつ", "3年生のまとめ"],
+            "4": ["天気と気温", "電池のはたらき", "夏の生き物", "人の体のつくり", "月と星", "空気と水の性質", "冬の生き物", "4年生のまとめ"],
+            "5": ["植物の発芽", "メダカのたんじょう", "花から実へ", "台風と気象情報", "流れる水のゆくえ", "ものの溶け方", "ふりこの運動", "電磁石のはたらき", "5年生のまとめ"],
+            "6": ["ものの燃え方", "体のつくりと働き", "植物の成長と日光", "生き物と水・空気", "月と太陽", "土地のつくりと変化", "てこのはたらき", "電気の利用", "6年生のまとめ"]
+        };
+
+        const QUIZ_DATA = {
+            "3": {
+                "生き物をさがそう": [
+                    {q:"昆虫の足はどこから出ているかな？", a:["むね","あたま","はら"], c:0, e:"昆虫の足はすべて「むね」の部分から6本出ています。"},
+                    {q:"ひまわりの種をまくのにぴったりの季節は？", a:["春","夏","冬"], c:0, e:"暖かくなってきた春（4月〜5月ごろ）にまきます。"},
+                    {q:"虫めがねで太陽を見てもいい？", a:["絶対だめ","少しならいい","サングラスならいい"], c:0, e:"目をひどく痛めるので、絶対に見てはいけません。"},
+                    {q:"タンポポの根っこはどうなっている？", a:["1本の太い根","たくさんの細い根","根はない"], c:0, e:"タンポポは地面深くに向かって1本の太い根がのびています。"},
+                    {q:"モンシロチョウの幼虫が好きな食べ物は？", a:["キャベツ","ひまわり","サクラ"], c:0, e:"モンシロチョウはキャベツなどの葉を好んで食べます。"}
+                ],
+                "チョウを育てよう": [
+                    {q:"チョウの育ち方の順番は？", a:["卵→幼虫→さなぎ→成虫","卵→さなぎ→幼虫→成虫","幼虫→卵→成虫→さなぎ"], c:0, e:"卵から幼虫、さなぎを経て、美しい羽を持つ成虫になります。"},
+                    {q:"チョウの幼虫は何回脱皮する？", a:["4回","1回","10回"], c:0, e:"モンシロチョウの場合、4回脱皮して5齢幼虫になります。"},
+                    {q:"さなぎの時期、チョウはどうしている？", a:["動かずに体が変化している","土の中で寝ている","たくさん食べる"], c:0, e:"外側は動きませんが、中では劇的な体の変化が起きています。"},
+                    {q:"チョウの成虫の足は何本？", a:["6本","4本","8本"], c:0, e:"昆虫なので、成虫も足は6本あります。"},
+                    {q:"チョウの成虫は何を飲む？", a:["花のミツ","葉っぱ","虫"], c:0, e:"ストローのような口で花のミツを吸います。"}
+                ],
+                "電気の通り道": [
+                    {q:"豆電球に明かりをつけるには何が必要？", a:["乾電池と導線","プラスチックの板","水"], c:0, e:"電池の＋極とー極がつながる回路が必要です。"},
+                    {q:"電気を通すものはどれ？", a:["アルミニウム缶","消しゴム","わりばし"], c:0, e:"金属は電気を通しやすい性質を持っています。"},
+                    {q:"回路の途中にスイッチを入れるとどうなる？", a:["電気をON/OFFできる","電池が長持ちする","電気が強くなる"], c:0, e:"スイッチで回路を閉じたり開いたりして操作します。"},
+                    {q:"乾電池を逆向きにするとどうなる？", a:["電流の向きが変わる","爆発する","明かりは消える"], c:0, e:"豆電球の場合は明かりがつきますが、電流の向きが逆になります。"},
+                    {q:"豆電球の中にある光る部分は？", a:["フィラメント","ガラス球","ソケット"], c:0, e:"細い金属の線（フィラメント）に電気が流れて光ります。"}
+                ],
+                "3年生のまとめ": [
+                    {q:"音の正体はなに？", a:["震え（振動）","風","光"], c:0, e:"物が震えることで音が生まれます。"},
+                    {q:"影ができるのは太陽のどの方向？", a:["反対側","同じ側","真上"], c:0, e:"光が遮られるため、太陽とは反対側に影ができます。"},
+                    {q:"磁石の同じ極（NとN）を近づけると？", a:["退け合う","引き合う","何も起きない"], c:0, e:"同じ極は反発し合い、違う極は引き合います。"},
+                    {q:"ゴムを強く引くと、車はどうなる？", a:["遠くまで進む","ゆっくり進む","止まる"], c:0, e:"ゴムを引く力が強いほど、大きなエネルギーが生まれます。"},
+                    {q:"昆虫の体はいくつに分かれている？", a:["3つ（頭・胸・腹）","2つ","1つ"], c:0, e:"昆虫は頭、胸、腹の3つのパーツで構成されています。"}
+                ]
+            },
+            "4": {
+                "天気と気温": [
+                    {q:"1日のうちで気温が一番高くなるのはいつ頃？", a:["午後2時ごろ","午前10時ごろ","夜の8時ごろ"], c:0, e:"太陽で地面が温まるのに時間がかかるため、午後2時ごろがピークです。"},
+                    {q:"百葉箱の中にあるのは？", a:["温度計","本","顕微鏡"], c:0, e:"直射日光を避けて正確な気温を測るために使われます。"},
+                    {q:"雨が降っている時の1日の気温変化は？", a:["あまり変化しない","大きく変化する","夜に上がる"], c:0, e:"雲に覆われているため、日光の影響が少なく変化が小さいです。"},
+                    {q:"気温を測るとき、正しい高さは？", a:["地上1.2〜1.5m","地面すれすれ","屋根の上"], c:0, e:"照り返しの影響を防ぐため、人の背の高さ程度で測ります。"},
+                    {q:"晴れの日の空の雲の量は？", a:["8割以下","全部","まったくない"], c:0, e:"雲の量が0〜8割なら「晴れ」、9〜10割なら「曇り」です。"}
+                ],
+                "4年生のまとめ": [
+                    {q:"星座の並び方は時間が経つと変わる？", a:["並びは変わらない","バラバラになる","消える"], c:0, e:"並び方はそのままに、全体が動いているように見えます。"},
+                    {q:"水を熱し続けると何になる？", a:["水蒸気","氷","空気"], c:0, e:"沸騰すると水蒸気になり、体積が非常に大きくなります。"},
+                    {q:"冬になると動物はどうする？", a:["冬眠したりじっとする","活発になる","いなくなる"], c:0, e:"食べ物が少ない冬を乗り切るための工夫です。"},
+                    {q:"筋肉が縮むと、つながっている骨はどうなる？", a:["引っ張られて動く","折れる","動かない"], c:0, e:"筋肉の収縮によって体が動きます。"},
+                    {q:"乾電池を直列につなぐと豆電球は？", a:["明るくなる","暗くなる","変わらない"], c:0, e:"電圧が上がり、電流がより多く流れるようになります。"}
+                ]
+            },
+            "5": {
+                "5年生のまとめ": [
+                    {q:"植物の発芽に必要な3つの条件は？", a:["水・空気・適当な温度","水・土・肥料","日光・水・空気"], c:0, e:"発芽には日光や土は必須ではありません。"},
+                    {q:"メダカのたまごの様子を詳しく見る道具は？", a:["解剖顕微鏡","天体望遠鏡","虫めがね"], c:0, e:"小さな変化を観察するには顕微鏡が適しています。"},
+                    {q:"台風の動きを予測するのに大切な情報は？", a:["気象衛星ひまわりの画像","昨年の日記","温度計"], c:0, e:"雲の動きや気圧の配置を衛星で確認します。"},
+                    {q:"ものの溶け方について、水に溶けたものは？", a:["見えないが液の中にある","消えてなくなる","下に沈む"], c:0, e:"目には見えませんが、液の中に均一に存在しています。"},
+                    {q:"電磁石を強くするには？", a:["コイルの巻き数を増やす","電池を減らす","導線を短くする"], c:0, e:"巻き数を増やすか、電流を強くすると磁力が上がります。"}
+                ]
+            },
+            "6": {
+                "6年生のまとめ": [
+                    {q:"ものが燃え続けるのに必要な気体は？", a:["酸素","二酸化炭素","窒素"], c:0, e:"酸素にはものを燃やす働き（助燃性）があります。"},
+                    {q:"でんぷんを調べるのに使う液体は？", a:["ヨウ素液","石灰水","水"], c:0, e:"でんぷんがあると青紫色に変化します。"},
+                    {q:"消化液に含まれ、食べ物を溶かすものは？", a:["消化酵素","水","ビタミン"], c:0, e:"唾液のアミラーゼなどが食物を分解します。"},
+                    {q:"地震によって土地がずれる現象は？", a:["断層","火口","津波"], c:0, e:"大きな力が加わり地面が割れてずれることを断層といいます。"},
+                    {q:"手回し発電機で作った電気をためる装置は？", a:["コンデンサー","電池","豆電球"], c:0, e:"電気エネルギーを一時的に蓄えておくことができます。"}
+                ]
+            }
+        };
+
+        const app = {
+            currentGrade: "",
+            currentUnit: "",
+            questions: [],
+            qIndex: 0,
+            score: 0,
+            isLocked: false,
+            chart: null,
+            saveData: { completedUnits: {} },
+
+            init() {
+                const stored = localStorage.getItem('scienceQuizDashboard_full_v1');
+                if (stored) this.saveData = JSON.parse(stored);
+                this.updateUI();
+                this.showHome();
+            },
+
+            save() {
+                localStorage.setItem('scienceQuizDashboard_full_v1', JSON.stringify(this.saveData));
+            },
+
+            updateUI() {
+                const totalUnits = 36;
+                const completedCount = Object.keys(this.saveData.completedUnits).length;
+                const percent = Math.floor((completedCount / totalUnits) * 100);
+                
+                document.getElementById('total-percent-text').innerText = `${percent}%`;
+                document.getElementById('total-progress-bar').style.width = `${percent}%`;
+                document.getElementById('total-count-display').innerText = completedCount;
+
+                const badge = document.getElementById('badge-rank');
+                if (percent === 100) { badge.innerText = "MASTER"; badge.className = "bg-indigo-600 text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase"; }
+                else if (percent >= 50) { badge.innerText = "EXPERT"; badge.className = "bg-blue-100 text-blue-600 text-[10px] font-bold px-2 py-1 rounded-full uppercase"; }
+                else if (percent >= 20) { badge.innerText = "ADVANCED"; badge.className = "bg-green-100 text-green-600 text-[10px] font-bold px-2 py-1 rounded-full uppercase"; }
+
+                ["3","4","5","6"].forEach(g => {
+                    const count = GRADE_UNITS[g].filter(u => this.saveData.completedUnits[`${g}-${u}`]).length;
+                    document.getElementById(`stat-${g}`).innerText = `${count}/${GRADE_UNITS[g].length}`;
+                });
+
+                this.initChart();
+            },
+
+            initChart() {
+                const ctx = document.getElementById('mainChart').getContext('2d');
+                const getCount = (g) => GRADE_UNITS[g].filter(u => this.saveData.completedUnits[`${g}-${u}`]).length;
+                const getLeft = (g) => GRADE_UNITS[g].length - getCount(g);
+                
+                if (this.chart) this.chart.destroy();
+
+                this.chart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['3年済', '3年未', '4年済', '4年未', '5年済', '5年未', '6年済', '6年未'],
+                        datasets: [{
+                            data: [getCount('3'), getLeft('3'), getCount('4'), getLeft('4'), getCount('5'), getLeft('5'), getCount('6'), getLeft('6')],
+                            backgroundColor: ['#fbbf24', '#fef3c7', '#fb923c', '#ffedd5', '#38bdf8', '#e0f2fe', '#6366f1', '#e0e7ff'],
+                            borderWidth: 0,
+                            weight: 1
+                        }]
+                    },
+                    options: {
+                        cutout: '82%',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false }, tooltip: { enabled: false } }
+                    }
+                });
+            },
+
+            showView(id) {
+                ["view-home", "view-units", "view-quiz", "view-result"].forEach(v => {
+                    document.getElementById(v).classList.add('hidden');
+                });
+                document.getElementById(id).classList.remove('hidden');
+                document.getElementById('view-container').scrollTop = 0;
+            },
+
+            showHome() {
+                this.updateUI();
+                this.showView('view-home');
+            },
+
+            showUnits(grade) {
+                this.currentGrade = String(grade);
+                const titleEl = document.getElementById('current-grade-title');
+                const listEl = document.getElementById('unit-list');
+                titleEl.innerText = this.currentGrade + "年生の単元";
+                listEl.innerHTML = "";
+
+                GRADE_UNITS[this.currentGrade].forEach(name => {
+                    const isDone = this.saveData.completedUnits[`${this.currentGrade}-${name}`];
+                    const btn = document.createElement('button');
+                    btn.className = `w-full p-4 rounded-2xl text-left font-bold transition-all flex justify-between items-center ${isDone ? 'bg-slate-50 text-slate-400 border border-slate-100' : 'bg-white border-2 border-slate-100 text-slate-700 shadow-sm'}`;
+                    btn.innerHTML = `<span>${name}</span>${isDone ? '✨' : '<span class="text-slate-300">→</span>'}`;
+                    btn.onclick = () => this.startQuiz(name);
+                    listEl.appendChild(btn);
+                });
+                this.showView('view-units');
+            },
+
+            startQuiz(unitName) {
+                this.currentUnit = unitName;
+                // クイズデータがない場合は学年のまとめから取得するか、デフォルトを表示
+                let source = QUIZ_DATA[this.currentGrade]?.[unitName];
+                if (!source) {
+                    source = QUIZ_DATA[this.currentGrade]?.[this.currentGrade + "年生のまとめ"] || [{q:"(問題データ準備中)", a:["A","B","C"], c:0, e:"準備中です。"}];
+                }
+                
+                this.questions = [...source].sort(() => Math.random() - 0.5).slice(0, 5);
+                this.qIndex = 0;
+                this.score = 0;
+                this.renderQuestion();
+                this.showView('view-quiz');
+            },
+
+            retryCurrentUnit() { this.startQuiz(this.currentUnit); },
+
+            renderQuestion() {
+                const q = this.questions[this.qIndex];
+                document.getElementById('quiz-progress').innerText = `Question ${this.qIndex + 1}/${this.questions.length}`;
+                document.getElementById('quiz-score-badge').innerText = `${this.score} PTS`;
+                document.getElementById('question-text').innerText = q.q;
+                document.getElementById('feedback-area').classList.add('hidden');
+                const container = document.getElementById('options-container');
+                container.innerHTML = "";
+                this.isLocked = false;
+
+                q.a.forEach((text, idx) => {
+                    const btn = document.createElement('button');
+                    btn.className = "w-full p-4 bg-white border-2 border-slate-100 rounded-2xl font-bold text-left hover:border-slate-300 transition-colors";
+                    btn.innerText = text;
+                    btn.onclick = () => this.checkAnswer(idx === q.c, btn);
+                    container.appendChild(btn);
+                });
+            },
+
+            checkAnswer(isCorrect, btn) {
+                if (this.isLocked) return;
+                this.isLocked = true;
+                const label = document.getElementById('result-label');
+                if (isCorrect) {
+                    this.score += 20;
+                    label.innerText = "正解！";
+                    label.className = "text-center text-2xl font-black mb-2 text-emerald-500";
+                    btn.classList.add('border-emerald-500', 'bg-emerald-50', 'text-emerald-700');
+                } else {
+                    label.innerText = "おしい！";
+                    label.className = "text-center text-2xl font-black mb-2 text-rose-500";
+                    btn.classList.add('border-rose-500', 'bg-rose-50', 'text-rose-700');
+                }
+                document.getElementById('explanation-text').innerText = this.questions[this.qIndex].e;
+                document.getElementById('feedback-area').classList.remove('hidden');
+            },
+
+            nextQuestion() {
+                this.qIndex++;
+                if (this.qIndex < this.questions.length) this.renderQuestion();
+                else this.showResult();
+            },
+
+            showResult() {
+                const isPerfect = this.score >= 80; // 80点以上でクリアとする（満点は100点）
+                document.getElementById('final-score').innerText = this.score;
+                const msg = document.getElementById('result-msg');
+                const emoji = document.getElementById('result-emoji');
+                
+                if (isPerfect) {
+                    emoji.innerText = "🏆";
+                    msg.innerText = "素晴らしい！合格です！この単元はマスターとして記録されます。";
+                    this.saveData.completedUnits[`${this.currentGrade}-${this.currentUnit}`] = true;
+                    this.save();
+                } else {
+                    emoji.innerText = "🚩";
+                    msg.innerText = "もう少し復習が必要かもしれません。もう一度チャレンジしましょう！";
+                }
+                this.showView('view-result');
+            },
+
+            resetData() {
+                if(confirm("すべての記録をリセットしますか？")) {
+                    localStorage.removeItem('scienceQuizDashboard_full_v1');
+                    this.saveData = { completedUnits: {} };
+                    this.showHome();
+                }
+            }
+        };
+
+        window.onload = () => app.init();
+    </script>
+</body>
+</html>
         .btn-grade {
             transition: all 0.2s;
             box-shadow: 0 6px 0 rgba(0,0,0,0.1);
