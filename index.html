@@ -2,194 +2,49 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>小学生理科クイズ</title>
 
 <style>
+
 body{
 font-family:sans-serif;
+background:#eef4ff;
+margin:0;
+padding:10px;
 text-align:center;
-background:#f2f7ff;
 }
 
 h1{
 background:#4a90e2;
 color:white;
-padding:10px;
+padding:12px;
+border-radius:8px;
 }
 
 select,button{
-font-size:16px;
-padding:5px;
-margin:10px;
-}
-
-#quiz{
-margin-top:20px;
+font-size:18px;
+padding:10px;
+margin:8px;
+border-radius:8px;
 }
 
 .question{
 background:white;
 margin:15px auto;
 padding:15px;
-width:80%;
+max-width:700px;
 border-radius:10px;
-box-shadow:0 0 5px rgba(0,0,0,0.2);
-}
-
-.choice{
-display:block;
-margin:5px;
-}
-
-.correct{
-color:green;
-font-weight:bold;
-}
-
-.wrong{
-color:red;
-font-weight:bold;
-}
-
-</style>
-</head>
-
-<body>
-
-<h1>小学生 理科クイズ</h1>
-
-<div>
-
-学年
-<select id="grade"></select>
-
-単元
-<select id="unit"></select>
-
-<button onclick="startQuiz()">クイズ開始</button>
-
-</div>
-
-<div id="quiz"></div>
-
-<script>
-
-const quizData = {
-"3":{
-"生き物をさがそう":[
-{q:"昆虫の足はどこから出ているかな？",a:["むね","あたま","はら"],c:0,e:"昆虫の足はすべて「むね」の部分から6本出ています。"},
-{q:"ひまわりの種をまくのにぴったりの季節は？",a:["春","夏","冬"],c:0,e:"暖かくなってきた春にまきます。"},
-{q:"虫めがねで太陽を見てもいい？",a:["絶対だめ","少しならいい","サングラスならいい"],c:0,e:"目をひどく痛めるので、絶対に見てはいけません。"},
-{q:"タンポポの根っこはどうなっている？",a:["1本の太い根","たくさんの細い根","根はない"],c:0,e:"タンポポは地面深くに向かって1本の太い根がのびています。"},
-{q:"モンシロチョウの幼虫が好きな食べ物は？",a:["キャベツ","ひまわり","サクラ"],c:0,e:"モンシロチョウはキャベツなどの葉にたまごを産み、幼虫はそれを食べます。"}
-]
-}
-};
-
-const gradeSelect=document.getElementById("grade");
-const unitSelect=document.getElementById("unit");
-
-for(let g in quizData){
-let op=document.createElement("option");
-op.value=g;
-op.textContent=g+"年生";
-gradeSelect.appendChild(op);
-}
-
-gradeSelect.onchange=function(){
-unitSelect.innerHTML="";
-let units=quizData[this.value];
-for(let u in units){
-let op=document.createElement("option");
-op.value=u;
-op.textContent=u;
-unitSelect.appendChild(op);
-}
-};
-
-gradeSelect.dispatchEvent(new Event("change"));
-
-function startQuiz(){
-
-let grade=gradeSelect.value;
-let unit=unitSelect.value;
-let questions=quizData[grade][unit];
-
-let html="";
-
-questions.forEach((q,i)=>{
-
-html+=`<div class="question">
-<p>Q${i+1}. ${q.q}</p>`;
-
-q.a.forEach((choice,index)=>{
-
-html+=`<label class="choice">
-<input type="radio" name="q${i}" value="${index}">
-${choice}
-</label>`;
-
-});
-
-html+=`<div id="result${i}"></div></div>`;
-
-});
-
-html+=`<button onclick="checkAnswer()">答え合わせ</button>`;
-
-document.getElementById("quiz").innerHTML=html;
-
-}
-
-function checkAnswer(){
-
-let grade=gradeSelect.value;
-let unit=unitSelect.value;
-let questions=quizData[grade][unit];
-
-let score=0;
-
-questions.forEach((q,i)=>{
-
-let checked=document.querySelector(`input[name="q${i}"]:checked`);
-let result=document.getElementById("result"+i);
-
-if(!checked){
-result.innerHTML="未回答";
-return;
-}
-
-if(Number(checked.value)===q.c){
-
-result.innerHTML=`<p class="correct">正解！</p><p>${q.e}</p>`;
-score++;
-
-}else{
-
-result.innerHTML=`<p class="wrong">不正解</p><p>${q.e}</p>`;
-
-}
-
-});
-
-alert("得点："+score+" / "+questions.length);
-
-}
-
-</script>
-
-</body>
-</html>border-radius:10px;
 box-shadow:0 2px 6px rgba(0,0,0,0.2);
 }
 
 .choice{
 display:block;
-font-size:18px;
-padding:8px;
+padding:10px;
 margin:6px;
 border-radius:8px;
-background:#f4f6ff;
+background:#f3f6ff;
+font-size:18px;
 }
 
 .choice:hover{
@@ -204,11 +59,6 @@ font-weight:bold;
 .wrong{
 color:red;
 font-weight:bold;
-}
-
-#scoreBox{
-margin:10px;
-font-size:18px;
 }
 
 </style>
@@ -231,22 +81,96 @@ font-size:18px;
 </div>
 
 <div id="scoreBox"></div>
-
 <div id="quiz"></div>
 
 <script>
 
-const quizData = {
+/* =========================
+問題データ
+========================= */
+
+const quizData={
+
 "3":{
 "生き物をさがそう":[
-{q:"昆虫の足はどこから出ているかな？",a:["むね","あたま","はら"],c:0,e:"昆虫の足はむねから出ています。"},
+{q:"昆虫の足はどこから出ているかな？",a:["むね","あたま","はら"],c:0,e:"昆虫の足はむねから6本出ています。"},
 {q:"ひまわりの種をまくのにぴったりの季節は？",a:["春","夏","冬"],c:0,e:"春にまきます。"},
-{q:"虫めがねで太陽を見てもいい？",a:["絶対だめ","少しならいい","サングラスならいい"],c:0,e:"目を痛めるので絶対に見てはいけません。"},
-{q:"タンポポの根っこはどうなっている？",a:["1本の太い根","たくさんの細い根","根はない"],c:0,e:"タンポポは太い根です。"},
-{q:"モンシロチョウの幼虫が好きな食べ物は？",a:["キャベツ","ひまわり","サクラ"],c:0,e:"キャベツの葉を食べます。"}
+{q:"虫めがねで太陽を見てもいい？",a:["絶対だめ","少しならいい","サングラスならいい"],c:0,e:"目を痛めるので見てはいけません。"},
+{q:"タンポポの根っこはどうなっている？",a:["1本の太い根","たくさんの細い根","根はない"],c:0,e:"太い根が1本あります。"},
+{q:"モンシロチョウの幼虫が好きな食べ物は？",a:["キャベツ","ひまわり","サクラ"],c:0,e:"キャベツを食べます。"}
+],
+
+"チョウを育てよう":[
+{q:"モンシロチョウのたまごの形は？",a:["ラグビーボール形","まんまる","しかく"],c:0,e:"ラグビーボールのような形です。"},
+{q:"アオムシは何回皮をぬぐ？",a:["4回","1回","しない"],c:0,e:"4回ぬぎます。"},
+{q:"さなぎからチョウが出ることを？",a:["羽化","ふか","脱皮"],c:0,e:"羽化といいます。"},
+{q:"昆虫の体は？",a:["頭むねはら","頭体足","頭腹"],c:0,e:"頭むねはらです。"},
+{q:"チョウの足の本数は？",a:["6本","4本","8本"],c:0,e:"昆虫は6本です。"}
+],
+
+"太陽の動き":[
+{q:"太陽はどこからのぼる？",a:["東","西","南"],c:0,e:"東からのぼります。"},
+{q:"太陽はどこにしずむ？",a:["西","東","北"],c:0,e:"西にしずみます。"},
+{q:"昼の太陽の位置は？",a:["南","北","東"],c:0,e:"南にあります。"},
+{q:"影は太陽のどちら側？",a:["反対","同じ","関係ない"],c:0,e:"反対にできます。"},
+{q:"影が一番短いのは？",a:["昼","朝","夕"],c:0,e:"昼です。"}
 ]
+
+},
+
+/* =========================
+４年
+========================= */
+
+"4":{
+
+"天気と気温":[
+{q:"気温はどこではかる？",a:["日かげ","日なた","地面"],c:0,e:"日かげです。"},
+{q:"晴れの日の気温は？",a:["昼高い","夜高い","変わらない"],c:0,e:"昼に高くなります。"},
+{q:"雲が多い天気は？",a:["くもり","晴れ","快晴"],c:0,e:"くもりです。"},
+{q:"気温差が大きい天気は？",a:["晴れ","くもり","雨"],c:0,e:"晴れです。"},
+{q:"雨の日の気温変化は？",a:["少ない","多い","同じ"],c:0,e:"少ないです。"}
+]
+
+},
+
+/* =========================
+５年
+========================= */
+
+"5":{
+
+"植物の発芽":[
+{q:"発芽に必要なものは？",a:["水空気適温","光","肥料"],c:0,e:"水空気適温です。"},
+{q:"発芽に光は？",a:["いらない","いる","どちらでも"],c:0,e:"必要ありません。"},
+{q:"養分の場所は？",a:["子葉","根","くき"],c:0,e:"子葉です。"},
+{q:"子葉はその後？",a:["しぼむ","大きくなる","花"],c:0,e:"しぼみます。"},
+{q:"適温は？",a:["20〜25","0","100"],c:0,e:"20〜25度。"}
+]
+
+},
+
+/* =========================
+６年
+========================= */
+
+"6":{
+
+"ものの燃え方":[
+{q:"燃えるのを助ける気体は？",a:["酸素","窒素","二酸化炭素"],c:0,e:"酸素です。"},
+{q:"空気の多くは？",a:["窒素","酸素","二酸化炭素"],c:0,e:"窒素です。"},
+{q:"燃えた後増える気体？",a:["二酸化炭素","酸素","窒素"],c:0,e:"二酸化炭素です。"},
+{q:"石灰水は？",a:["白く濁る","赤く","透明"],c:0,e:"白く濁ります。"},
+{q:"燃え続ける条件？",a:["新しい空気","密閉","水"],c:0,e:"新しい空気です。"}
+]
+
 }
+
 }
+
+/* =========================
+UI
+========================= */
 
 const gradeSelect=document.getElementById("grade")
 const unitSelect=document.getElementById("unit")
@@ -279,13 +203,15 @@ unitSelect.appendChild(op)
 
 gradeSelect.dispatchEvent(new Event("change"))
 
-function shuffle(array){
+/* =========================
+クイズ
+========================= */
 
-return array.sort(()=>Math.random()-0.5)
-
+function shuffle(arr){
+return arr.sort(()=>Math.random()-0.5)
 }
 
-let currentQuestions=[]
+let current=[]
 
 function startQuiz(){
 
@@ -296,104 +222,67 @@ let questions=[...quizData[grade][unit]]
 
 shuffle(questions)
 
-currentQuestions=questions.slice(0,5)
+current=questions.slice(0,5)
 
 let html=""
 
-currentQuestions.forEach((q,i)=>{
+current.forEach((q,i)=>{
 
 html+=`<div class="question">
 
 <p><b>Q${i+1}</b> ${q.q}</p>`
 
-q.a.forEach((choice,index)=>{
+q.a.forEach((c,index)=>{
 
 html+=`
 <label class="choice">
 <input type="radio" name="q${i}" value="${index}">
-${choice}
+${c}
 </label>
 `
 
 })
 
-html+=`<div id="result${i}"></div></div>`
+html+=`<div id="r${i}"></div></div>`
 
 })
 
-html+=`<button onclick="checkAnswer()">答え合わせ</button>`
+html+=`<button onclick="check()">答え合わせ</button>`
 
-document.getElementById("quiz").innerHTML=html
+quiz.innerHTML=html
 
 }
 
-function checkAnswer(){
+function check(){
 
 let score=0
 
-currentQuestions.forEach((q,i)=>{
+current.forEach((q,i)=>{
 
 let checked=document.querySelector(`input[name="q${i}"]:checked`)
-
-let result=document.getElementById("result"+i)
+let r=document.getElementById("r"+i)
 
 if(!checked){
-
-result.innerHTML="未回答"
-
+r.innerHTML="未回答"
 return
-
 }
 
-if(Number(checked.value)===q.c){
+if(Number(checked.value)==q.c){
 
 score++
-
-result.innerHTML=`<p class="correct">正解</p><p>${q.e}</p>`
+r.innerHTML=`<p class="correct">正解</p><p>${q.e}</p>`
 
 }else{
 
-result.innerHTML=`<p class="wrong">不正解</p><p>${q.e}</p>`
+r.innerHTML=`<p class="wrong">不正解</p><p>${q.e}</p>`
 
 }
 
 })
 
-let rate=Math.round(score/currentQuestions.length*100)
-
-saveScore(rate)
-
-alert("得点 "+score+" / "+currentQuestions.length)
-
-showScore()
+alert("得点 "+score+" / "+current.length)
 
 }
-
-function saveScore(rate){
-
-let data=JSON.parse(localStorage.getItem("quizScore")||"[]")
-
-data.push(rate)
-
-localStorage.setItem("quizScore",JSON.stringify(data))
-
-}
-
-function showScore(){
-
-let data=JSON.parse(localStorage.getItem("quizScore")||"[]")
-
-if(data.length==0)return
-
-let avg=Math.round(data.reduce((a,b)=>a+b)/data.length)
-
-document.getElementById("scoreBox").innerHTML=
-
-"これまでの平均正答率："+avg+"%"
-
-}
-
-showScore()
 
 </script>
 
