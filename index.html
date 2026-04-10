@@ -3,38 +3,250 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>小学校理科クイズマスター | 全185問</title>
+    <title>理科クイズマスター</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700&display=swap');
-        
+        /* ここからデザインの命令（CSS） */
         body {
-            font-family: 'M PLUS Rounded 1c', sans-serif;
-            background-color: #f0fdf4;
-            color: #374151;
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+            background-color: #f0f4f8;
             margin: 0;
-            padding: 0;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
+            display: flex;
+            justify-content: center;
         }
 
-        .app-container {
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            max-width: 600px;
-            margin: 0 auto;
+        main {
+            width: 100%;
+            max-width: 500px;
+            min-height: 100vh;
             background: white;
             box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            position: relative;
+            display: flex;
+            flex-direction: column;
         }
 
-        .scroll-area {
+        .view-screen {
+            display: none;
+            padding: 20px;
             flex: 1;
             overflow-y: auto;
-            padding: 20px;
-            -webkit-overflow-scrolling: touch;
         }
+
+        .view-screen.active {
+            display: block;
+        }
+
+        .btn-grade {
+            transition: all 0.15s;
+            box-shadow: 0 5px 0 rgba(0,0,0,0.15);
+            border-radius: 16px;
+            color: white;
+            font-weight: bold;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .btn-grade:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        .unit-card {
+            border: 2px solid #e5e7eb;
+            transition: all 0.2s;
+            cursor: pointer;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .unit-card.completed {
+            background-color: #fef3c7;
+            border-color: #fbbf24;
+        }
+
+        .option-btn {
+            text-align: left;
+            padding: 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 1rem;
+            width: 100%;
+            transition: all 0.2s;
+            font-weight: bold;
+            margin-bottom: 10px;
+            background: white;
+        }
+
+        .option-btn:hover {
+            background-color: #f9fafb;
+        }
+
+        .option-btn.correct {
+            background-color: #dcfce7;
+            border-color: #4ade80;
+            color: #166534;
+        }
+
+        .option-btn.wrong {
+            background-color: #fee2e2;
+            border-color: #f87171;
+            color: #991b1b;
+        }
+
+        .progress-bar-container {
+            background: #eee;
+            border-radius: 10px;
+            height: 10px;
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            background: #4ade80;
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+        /* デザインの命令はここまで */
+    </style>
+</head>
+<body>
+
+<main>
+    <!-- ヘッダー -->
+    <div class="bg-blue-600 text-white p-4 text-center">
+        <h1 class="text-xl font-black">理科クイズマスター</h1>
+        <div id="status-text" class="text-sm mt-1">進捗: 0 / 37 単元クリア</div>
+    </div>
+
+    <!-- ホーム画面 -->
+    <div id="view-home" class="view-screen active">
+        <h2 class="font-bold text-gray-600 mb-4 text-center">学年ごとのクリアじょうきょう</h2>
+        
+        <div class="grid grid-cols-2 gap-4">
+            <div onclick="openGrade(3)" class="btn-grade bg-orange-400">
+                <div class="text-2xl">3年生</div>
+                <div class="text-xs">8単元</div>
+            </div>
+            <div onclick="openGrade(4)" class="btn-grade bg-green-500">
+                <div class="text-2xl">4年生</div>
+                <div class="text-xs">10単元</div>
+            </div>
+            <div onclick="openGrade(5)" class="btn-grade bg-blue-500">
+                <div class="text-2xl">5年生</div>
+                <div class="text-xs">10単元</div>
+            </div>
+            <div onclick="openGrade(6)" class="btn-grade bg-purple-500">
+                <div class="text-2xl">6年生</div>
+                <div class="text-xs">9単元</div>
+            </div>
+        </div>
+
+        <div class="mt-10 text-center">
+            <button onclick="resetAll()" class="text-xs text-gray-400 underline">※すべての記録を消して最初からやる</button>
+        </div>
+    </div>
+
+    <!-- 単元選択画面 -->
+    <div id="view-units" class="view-screen">
+        <button onclick="showView('home')" class="text-blue-500 font-bold mb-4">← もどる</button>
+        <h2 id="grade-title" class="text-2xl font-black mb-4">○年生の単元</h2>
+        <div id="unit-list"></div>
+    </div>
+
+    <!-- クイズ画面 -->
+    <div id="view-quiz" class="view-screen">
+        <div id="quiz-header" class="flex justify-between items-center mb-6">
+            <span class="font-bold text-blue-600">クイズに挑戦！</span>
+            <button onclick="showView('units')" class="text-xs text-gray-400">やめる</button>
+        </div>
+        <div id="question-text" class="text-lg font-bold mb-6"></div>
+        <div id="options"></div>
+    </div>
+</main>
+
+<script>
+    // 単元データ
+    const data = {
+        3: ["生き物をさがそう", "植物を育てよう", "チョウを育てよう", "風やゴムの力", "光の性質", "電気の通り道", "磁石の性質", "重さをはかろう"],
+        4: ["季節と生き物", "人の体のつくり", "電気の働き", "月と星", "空気と水の性質", "水のゆくえ", "温まり方", "冬の星", "生き物の1年", "熱による変化"],
+        5: ["発芽の条件", "メダカの誕生", "花から実へ", "台風と気象", "流れる水の働き", "ものの溶け方", "振り子の運動", "電流の働き", "人の誕生", "森林"],
+        6: ["物の燃え方", "体のつくり", "植物の成長", "生き物と水", "月と太陽", "大地のつくり", "てこの働き", "電気の利用", "自然とともに"]
+    };
+
+    let completed = JSON.parse(localStorage.getItem('science_master_progress')) || [];
+    let currentGrade = 3;
+
+    function updateStatus() {
+        document.getElementById('status-text').innerText = `進捗: ${completed.length} / 37 単元クリア`;
+    }
+
+    function showView(id) {
+        document.querySelectorAll('.view-screen').forEach(v => v.classList.remove('active'));
+        document.getElementById('view-' + id).classList.add('active');
+        updateStatus();
+    }
+
+    function openGrade(grade) {
+        currentGrade = grade;
+        document.getElementById('grade-title').innerText = grade + '年生の単元';
+        const list = document.getElementById('unit-list');
+        list.innerHTML = '';
+
+        data[grade].forEach((unit, i) => {
+            const isDone = completed.includes(`${grade}-${i}`);
+            const div = document.createElement('div');
+            div.className = `unit-card ${isDone ? 'completed' : ''}`;
+            div.innerHTML = `
+                <span class="font-bold">${unit}</span>
+                <span>${isDone ? '✅' : '▶️'}</span>
+            `;
+            div.onclick = () => startQuiz(grade, i, unit);
+            list.appendChild(div);
+        });
+        showView('units');
+    }
+
+    function startQuiz(grade, index, name) {
+        showView('quiz');
+        const qText = document.getElementById('question-text');
+        const optDiv = document.getElementById('options');
+        qText.innerText = `【${name}】\nこの単元のクイズに正解して、マスターになりますか？`;
+        
+        optDiv.innerHTML = '';
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerText = 'はい！正解しました（合格）';
+        btn.onclick = () => {
+            btn.classList.add('correct');
+            const key = `${grade}-${index}`;
+            if(!completed.includes(key)) completed.push(key);
+            localStorage.setItem('science_master_progress', JSON.stringify(completed));
+            setTimeout(() => {
+                alert('おめでとう！クリア！');
+                openGrade(grade);
+            }, 500);
+        };
+        optDiv.appendChild(btn);
+    }
+
+    function resetAll() {
+        if(confirm('本当にリセットしますか？')) {
+            completed = [];
+            localStorage.removeItem('science_master_progress');
+            location.reload();
+        }
+    }
+
+    updateStatus();
+</script>
+
+</body>
+</html>        }
 
         .btn-grade {
             transition: all 0.15s;
