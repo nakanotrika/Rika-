@@ -2,39 +2,184 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>小学生理科クイズ</title>
 
 <style>
-
 body{
 font-family:sans-serif;
-background:#eef4ff;
-margin:0;
-padding:10px;
 text-align:center;
+background:#f2f7ff;
 }
 
 h1{
 background:#4a90e2;
 color:white;
-padding:12px;
-border-radius:8px;
+padding:10px;
 }
 
 select,button{
-font-size:18px;
-padding:10px;
-margin:8px;
-border-radius:8px;
+font-size:16px;
+padding:5px;
+margin:10px;
+}
+
+#quiz{
+margin-top:20px;
 }
 
 .question{
 background:white;
 margin:15px auto;
 padding:15px;
-max-width:600px;
+width:80%;
 border-radius:10px;
+box-shadow:0 0 5px rgba(0,0,0,0.2);
+}
+
+.choice{
+display:block;
+margin:5px;
+}
+
+.correct{
+color:green;
+font-weight:bold;
+}
+
+.wrong{
+color:red;
+font-weight:bold;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>小学生 理科クイズ</h1>
+
+<div>
+
+学年
+<select id="grade"></select>
+
+単元
+<select id="unit"></select>
+
+<button onclick="startQuiz()">クイズ開始</button>
+
+</div>
+
+<div id="quiz"></div>
+
+<script>
+
+const quizData = {
+"3":{
+"生き物をさがそう":[
+{q:"昆虫の足はどこから出ているかな？",a:["むね","あたま","はら"],c:0,e:"昆虫の足はすべて「むね」の部分から6本出ています。"},
+{q:"ひまわりの種をまくのにぴったりの季節は？",a:["春","夏","冬"],c:0,e:"暖かくなってきた春にまきます。"},
+{q:"虫めがねで太陽を見てもいい？",a:["絶対だめ","少しならいい","サングラスならいい"],c:0,e:"目をひどく痛めるので、絶対に見てはいけません。"},
+{q:"タンポポの根っこはどうなっている？",a:["1本の太い根","たくさんの細い根","根はない"],c:0,e:"タンポポは地面深くに向かって1本の太い根がのびています。"},
+{q:"モンシロチョウの幼虫が好きな食べ物は？",a:["キャベツ","ひまわり","サクラ"],c:0,e:"モンシロチョウはキャベツなどの葉にたまごを産み、幼虫はそれを食べます。"}
+]
+}
+};
+
+const gradeSelect=document.getElementById("grade");
+const unitSelect=document.getElementById("unit");
+
+for(let g in quizData){
+let op=document.createElement("option");
+op.value=g;
+op.textContent=g+"年生";
+gradeSelect.appendChild(op);
+}
+
+gradeSelect.onchange=function(){
+unitSelect.innerHTML="";
+let units=quizData[this.value];
+for(let u in units){
+let op=document.createElement("option");
+op.value=u;
+op.textContent=u;
+unitSelect.appendChild(op);
+}
+};
+
+gradeSelect.dispatchEvent(new Event("change"));
+
+function startQuiz(){
+
+let grade=gradeSelect.value;
+let unit=unitSelect.value;
+let questions=quizData[grade][unit];
+
+let html="";
+
+questions.forEach((q,i)=>{
+
+html+=`<div class="question">
+<p>Q${i+1}. ${q.q}</p>`;
+
+q.a.forEach((choice,index)=>{
+
+html+=`<label class="choice">
+<input type="radio" name="q${i}" value="${index}">
+${choice}
+</label>`;
+
+});
+
+html+=`<div id="result${i}"></div></div>`;
+
+});
+
+html+=`<button onclick="checkAnswer()">答え合わせ</button>`;
+
+document.getElementById("quiz").innerHTML=html;
+
+}
+
+function checkAnswer(){
+
+let grade=gradeSelect.value;
+let unit=unitSelect.value;
+let questions=quizData[grade][unit];
+
+let score=0;
+
+questions.forEach((q,i)=>{
+
+let checked=document.querySelector(`input[name="q${i}"]:checked`);
+let result=document.getElementById("result"+i);
+
+if(!checked){
+result.innerHTML="未回答";
+return;
+}
+
+if(Number(checked.value)===q.c){
+
+result.innerHTML=`<p class="correct">正解！</p><p>${q.e}</p>`;
+score++;
+
+}else{
+
+result.innerHTML=`<p class="wrong">不正解</p><p>${q.e}</p>`;
+
+}
+
+});
+
+alert("得点："+score+" / "+questions.length);
+
+}
+
+</script>
+
+</body>
+</html>border-radius:10px;
 box-shadow:0 2px 6px rgba(0,0,0,0.2);
 }
 
