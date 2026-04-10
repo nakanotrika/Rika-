@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>小学校理科クイズマスター | 3年生〜6年生 全185問</title>
-    <!-- Tailwind CSS for modern UI -->
+    <title>小学校理科クイズマスター</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700&display=swap');
         
         body {
             font-family: 'M PLUS Rounded 1c', sans-serif;
@@ -15,659 +14,303 @@
             color: #374151;
             margin: 0;
             padding: 0;
-            -webkit-tap-highlight-color: transparent;
+            overflow: hidden;
         }
 
-        /* カスタムスクロールバー */
-        .custom-scroll::-webkit-scrollbar { width: 6px; }
-        .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: #4ade80; border-radius: 10px; }
-
-        .app-card {
-            border: 6px solid #4ade80;
+        .app-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            max-width: 600px;
+            margin: 0 auto;
             background: white;
-            box-shadow: 0 15px 35px -5px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
         }
 
-        .btn-push {
-            transition: all 0.15s;
-            box-shadow: 0 4px 0 #cbd5e1;
-            position: relative;
+        .btn-grade {
+            transition: transform 0.1s;
+            box-shadow: 0 6px 0 rgba(0,0,0,0.1);
         }
-        .btn-push:active {
+        .btn-grade:active {
             transform: translateY(4px);
             box-shadow: none;
         }
 
-        ruby rt {
-            font-size: 0.6em;
-            color: #6b7280;
+        .scroll-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            -webkit-overflow-scrolling: touch;
         }
 
-        /* アニメーション */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .unit-card {
+            border: 2px solid #e5e7eb;
+            transition: all 0.2s;
         }
-        .animate-in { animation: fadeIn 0.4s ease forwards; }
+        .unit-card.completed {
+            background-color: #fef3c7;
+            border-color: #fbbf24;
+        }
     </style>
 </head>
-<body class="flex flex-col items-center min-h-screen bg-green-50 p-2 sm:p-6">
+<body>
 
-    <!-- メインコンテナ -->
-    <div id="app" class="w-full max-w-2xl app-card rounded-[2.5rem] overflow-hidden flex flex-col h-[92vh] max-h-[850px]">
-        
+    <div class="app-container">
         <!-- ヘッダー -->
-        <header class="bg-green-500 p-5 text-white text-center shrink-0 shadow-lg z-10">
-            <h1 class="text-xl sm:text-2xl font-bold tracking-tight">
-                <ruby>理科<rt>りか</rt></ruby>クイズマスター
-            </h1>
-            <div id="global-stats" class="text-[10px] mt-1 opacity-90 flex justify-center gap-2">
-                <span id="total-progress-text">全185問 収録中</span>
-                <span class="bg-white/20 px-2 rounded-full">3年生〜6年生</span>
-            </div>
+        <header class="bg-green-600 p-4 text-white text-center shadow-md">
+            <h1 class="text-xl font-bold">理科クイズマスター</h1>
+            <div id="status-bar" class="text-xs mt-1 opacity-80">全185問 収録</div>
         </header>
 
         <!-- メイン表示エリア -->
-        <main id="main-view" class="flex-grow overflow-y-auto p-4 sm:p-6 custom-scroll">
+        <main id="view-container" class="scroll-area">
             
-            <!-- 【画面1】学年選択 -->
-            <section id="view-home" class="animate-in space-y-6">
-                <div class="text-center py-4">
-                    <div class="inline-block bg-yellow-100 text-yellow-700 text-xs px-3 py-1 rounded-full font-bold mb-2">COMPLETE EDITION</div>
-                    <h2 class="text-xl font-bold text-gray-700">〜 <ruby>何年生<rt>なんねんせい</rt></ruby>の<ruby>問題<rt>もんだい</rt></ruby>にする？ 〜</h2>
-                </div>
-
+            <!-- 【1】学年選択画面 -->
+            <div id="view-home" class="space-y-6">
+                <div class="text-center py-4 text-lg font-bold text-gray-600">何年生の問題に挑戦する？</div>
                 <div class="grid grid-cols-2 gap-4">
-                    <button onclick="router.go('grade', {g:3})" class="btn-push bg-yellow-400 hover:bg-yellow-300 text-white py-10 rounded-3xl text-2xl font-bold flex flex-col items-center">
-                        <span class="text-sm opacity-80 mb-1">Grade 3</span>
-                        3<ruby>年生<rt>ねんせい</rt></ruby>
-                    </button>
-                    <button onclick="router.go('grade', {g:4})" class="btn-push bg-orange-400 hover:bg-orange-300 text-white py-10 rounded-3xl text-2xl font-bold flex flex-col items-center">
-                        <span class="text-sm opacity-80 mb-1">Grade 4</span>
-                        4<ruby>年生<rt>ねんせい</rt></ruby>
-                    </button>
-                    <button onclick="router.go('grade', {g:5})" class="btn-push bg-blue-400 hover:bg-blue-300 text-white py-10 rounded-3xl text-2xl font-bold flex flex-col items-center">
-                        <span class="text-sm opacity-80 mb-1">Grade 5</span>
-                        5<ruby>年生<rt>ねんせい</rt></ruby>
-                    </button>
-                    <button onclick="router.go('grade', {g:6})" class="btn-push bg-purple-400 hover:bg-purple-300 text-white py-10 rounded-3xl text-2xl font-bold flex flex-col items-center">
-                        <span class="text-sm opacity-80 mb-1">Grade 6</span>
-                        6<ruby>年生<rt>ねんせい</rt></ruby>
-                    </button>
+                    <button onclick="app.showUnits('3')" class="btn-grade bg-yellow-400 text-white py-12 rounded-3xl text-2xl font-bold">3年生</button>
+                    <button onclick="app.showUnits('4')" class="btn-grade bg-orange-400 text-white py-12 rounded-3xl text-2xl font-bold">4年生</button>
+                    <button onclick="app.showUnits('5')" class="btn-grade bg-blue-400 text-white py-12 rounded-3xl text-2xl font-bold">5年生</button>
+                    <button onclick="app.showUnits('6')" class="btn-grade bg-purple-400 text-white py-12 rounded-3xl text-2xl font-bold">6年生</button>
                 </div>
+            </div>
 
-                <div class="text-center pt-10">
-                    <button onclick="dataStore.clearAll()" class="text-xs text-gray-400 hover:text-red-400 transition underline decoration-dotted">
-                        ※これまでの成績をリセットする
-                    </button>
-                </div>
-            </section>
+            <!-- 【2】単元選択画面 -->
+            <div id="view-units" class="hidden space-y-4">
+                <button onclick="app.showHome()" class="text-green-600 font-bold mb-2">← もどる</button>
+                <h2 id="current-grade-title" class="text-2xl font-bold border-b-4 border-green-200 pb-2"></h2>
+                <div id="unit-list" class="space-y-3"></div>
+            </div>
 
-            <!-- 【画面2】単元選択 -->
-            <section id="view-unit" class="hidden animate-in space-y-4">
-                <button onclick="router.go('home')" class="text-green-600 text-sm font-bold mb-2 flex items-center hover:bg-green-100 px-3 py-1 rounded-full w-fit transition">
-                    ← ほかの<ruby>学年<rt>がくねん</rt></ruby>をえらぶ
-                </button>
-                
-                <div class="flex items-center justify-between border-b pb-4">
-                    <h2 id="grade-label" class="text-2xl font-black text-gray-800"></h2>
-                    <div id="grade-progress-badge" class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-bold"></div>
-                </div>
-
-                <div id="unit-grid" class="grid grid-cols-1 gap-3 py-2">
-                    <!-- JSで動的に挿入 -->
-                </div>
-            </section>
-
-            <!-- 【画面3】クイズ実行 -->
-            <section id="view-quiz" class="hidden animate-in h-full flex flex-col">
+            <!-- 【3】クイズ画面 -->
+            <div id="view-quiz" class="hidden">
                 <div class="flex justify-between items-center mb-4">
-                    <span id="quiz-count" class="bg-green-100 text-green-700 px-4 py-1 rounded-full text-xs font-bold">1 / 5</span>
-                    <span id="quiz-current-score" class="text-orange-500 font-bold text-lg">0 点</span>
+                    <span id="quiz-progress" class="bg-gray-100 px-3 py-1 rounded-full text-sm font-bold">1 / 5</span>
+                    <span id="quiz-score" class="text-orange-500 font-bold">0点</span>
                 </div>
-
-                <div class="bg-gray-50 p-5 rounded-2xl mb-6 border-l-8 border-green-400 shadow-sm min-h-[120px] flex items-center">
-                    <h3 id="question-text" class="text-lg font-bold text-gray-800 leading-relaxed"></h3>
+                <div class="bg-green-50 p-6 rounded-2xl mb-6 min-h-[120px] flex items-center shadow-inner">
+                    <p id="question-text" class="text-lg font-bold leading-relaxed"></p>
                 </div>
-
-                <div id="options-grid" class="space-y-3 mb-6">
-                    <!-- JSで動的に挿入 -->
-                </div>
+                <div id="options-container" class="space-y-3"></div>
                 
-                <div id="feedback-box" class="hidden border-t-2 border-dashed border-gray-100 pt-6 mt-4">
-                    <div id="feedback-icon" class="text-center font-black text-4xl mb-4"></div>
-                    <div class="p-4 bg-yellow-50 rounded-2xl text-sm mb-6 border border-yellow-200 text-gray-700 leading-relaxed">
-                        <p class="font-bold text-yellow-800 mb-1">★解説</p>
-                        <span id="explanation-text"></span>
-                    </div>
-                    <button onclick="quizEngine.next()" class="btn-push w-full bg-green-500 text-white py-5 rounded-3xl font-bold text-xl mb-10">つぎへ進む</button>
+                <!-- 解説エリア -->
+                <div id="feedback-area" class="hidden mt-6 p-4 bg-yellow-50 border-2 border-yellow-200 rounded-2xl">
+                    <div id="result-label" class="text-center text-2xl font-bold mb-2"></div>
+                    <p class="text-sm font-bold text-yellow-800 mb-1">【かいせつ】</p>
+                    <p id="explanation-text" class="text-sm leading-relaxed mb-4"></p>
+                    <button onclick="app.nextQuestion()" class="w-full bg-green-500 text-white py-4 rounded-xl font-bold text-lg shadow-lg">次へすすむ</button>
                 </div>
-            </section>
+            </div>
 
-            <!-- 【画面4】結果発表 -->
-            <section id="view-result" class="hidden animate-in space-y-6">
-                <div class="text-center bg-gradient-to-b from-green-50 to-white py-12 rounded-[3rem] border-2 border-green-100 shadow-inner">
-                    <div id="result-emoji" class="text-8xl mb-6 scale-110">🎉</div>
-                    <h2 class="text-2xl font-black mb-2">結果発表！</h2>
-                    <p id="result-score-val" class="text-5xl text-green-600 font-black mb-4"></p>
-                    <p id="result-message" class="text-gray-500 font-bold px-6"></p>
-                </div>
-
-                <div class="grid grid-cols-1 gap-3">
-                    <button onclick="router.go('grade', {g: quizEngine.currentGrade})" class="btn-push w-full bg-orange-400 text-white py-5 rounded-full font-bold text-xl">
-                        ほかの単元に挑戦
-                    </button>
-                    <button onclick="router.go('home')" class="btn-push w-full bg-white border-2 border-gray-200 text-gray-400 py-3 rounded-full font-bold text-sm">
-                        学年をえらびなおす
-                    </button>
-                </div>
-            </section>
+            <!-- 【4】結果画面 -->
+            <div id="view-result" class="hidden text-center py-10">
+                <div class="text-6xl mb-6" id="result-emoji">🎉</div>
+                <h2 class="text-2xl font-bold mb-2">結果は...</h2>
+                <div id="final-score" class="text-6xl font-black text-green-600 mb-6"></div>
+                <p id="result-msg" class="font-bold text-gray-500 mb-8 px-4"></p>
+                <button onclick="app.showHome()" class="w-full bg-orange-400 text-white py-4 rounded-full font-bold text-lg">学年選択にもどる</button>
+            </div>
 
         </main>
         
-        <!-- フッター -->
-        <footer class="bg-gray-50 p-3 text-[10px] text-gray-400 text-center shrink-0 border-t">
-            &copy; 2024 理科クイズマスター制作委員会
+        <footer class="p-2 text-[10px] text-gray-300 text-center border-t">
+            Science Quiz App
         </footer>
     </div>
 
     <script>
-        /**
-         * 185問全クイズデータ
-         */
-        const ALL_QUIZ_DATA = {
-            3: {
-                "<ruby>生き物をさがそう<rt>いきものをさがそう</rt></ruby>": [
-                    {q:"昆虫の足はどこから出てる？", a:["胸","頭","腹"], c:0, e:"足は胸（むね）から6本出ています。"},
-                    {q:"ヒマワリの種はいつまく？", a:["春","夏","秋"], c:0, e:"暖かくなった春にまきます。"},
-                    {q:"虫めがねで太陽を見ていい？", a:["ダメ絶対","少しならいい","サングラスならいい"], c:0, e:"目を痛めるので絶対にいけません。"},
-                    {q:"タンポポの根は？", a:["1本の太い根","たくさんの細い根","根はない"], c:0, e:"タンポポは太い根がまっすぐのびています。"},
-                    {q:"モンシロチョウがよくいる花は？", a:["キャベツ","サクラ","チューリップ"], c:0, e:"幼虫がキャベツを食べるので近くによくいます。"}
+        // データの定義（3年生〜6年生）
+        const QUIZ_DATA = {
+            "3": {
+                "生き物をさがそう": [
+                    {q:"昆虫の足はどこから出ているかな？", a:["むね","あたま","はら"], c:0, e:"昆虫の足はすべて「むね」の部分から6本出ています。"},
+                    {q:"ひまわりの種をまくのにぴったりの季節は？", a:["春","夏","冬"], c:0, e:"暖かくなってきた春（4月〜5月ごろ）にまきます。"},
+                    {q:"虫めがねで太陽を見てもいい？", a:["絶対だめ","少しならいい","サングラスならいい"], c:0, e:"目をひどく痛めるので、絶対に見てはいけません。"},
+                    {q:"タンポポの根っこはどうなっている？", a:["1本の太い根","たくさんの細い根","根はない"], c:0, e:"タンポポは地面深くに向かって1本の太い根がのびています。"},
+                    {q:"モンシロチョウの幼虫が好きな食べ物は？", a:["キャベツ","ひまわり","サクラ"], c:0, e:"モンシロチョウはキャベツなどの葉にたまごを産み、幼虫はそれを食べます。"}
                 ],
                 "チョウを育てよう": [
-                    {q:"モンシロチョウのたまごの形は？", a:["ラグビーボール形","まんまる","しかく"], c:0, e:"小さなつぶつぶでラグビーボールのような形です。"},
-                    {q:"アオムシは何回脱皮する？", a:["4回","1回","しない"], c:0, e:"4回脱皮して5齢幼虫になります。"},
-                    {q:"さなぎになるとき、糸で何を固定する？", a:["体","葉っぱ","たまご"], c:0, e:"体をしっかり固定して動かなくなります。"},
-                    {q:"チョウの体は「頭・胸・◯」？", a:["腹","足","はね"], c:0, e:"昆虫は頭・胸・腹（はら）の3つに分かれます。"},
-                    {q:"チョウの足は何本？", a:["6本","4本","8本"], c:0, e:"昆虫なので6本です。"}
+                    {q:"モンシロチョウのたまごの形は？", a:["ラグビーボール形","まんまる","しかく"], c:0, e:"小さなつぶつぶで、よく見るとラグビーボールのような形をしています。"},
+                    {q:"アオムシは何回皮をぬいで大きくなる？", a:["4回","1回","しない"], c:0, e:"4回脱皮（だっぴ）して、5れい幼虫という大きさになります。"},
+                    {q:"さなぎからチョウが出てくることを何という？", a:["羽化（うか）","ふか","脱皮"], c:0, e:"さなぎから成虫になることを羽化といいます。"},
+                    {q:"昆虫の体は「頭・むね・◯」？", a:["はら","あし","はね"], c:0, e:"昆虫は「あたま・むね・はら」の3つにわかれています。"},
+                    {q:"チョウの足の本数は？", a:["6本","4本","8本"], c:0, e:"昆虫の仲間なので、足は6本です。"}
                 ],
                 "風やゴムの力": [
-                    {q:"風が強いと車はどう進む？", a:["遠くまで進む","あまり進まない","止まる"], c:0, e:"風の力が強いほど、大きなエネルギーになります。"},
-                    {q:"ゴムを長くのばすと？", a:["遠くまで進む","近くで止まる","重くなる"], c:0, e:"元にもどろうとする力が強くなります。"},
-                    {q:"帆を大きくすると風の力は？", a:["大きくなる","小さくなる","変わらない"], c:0, e:"風を受ける面積が増えると力も増します。"},
-                    {q:"ゴムがもどる力を何という？", a:["弾力","重力","磁力"], c:0, e:"ゴムが元にもどろうとする性質です。"},
-                    {q:"車を重くするとどうなる？", a:["進む距離が短くなる","進む距離が長くなる","速くなる"], c:0, e:"重いものを動かすにはより大きな力が必要です。"}
-                ],
-                "光のせいしつ": [
-                    {q:"鏡で光を反射させると？", a:["まっすぐ進む","曲がって進む","消える"], c:0, e:"光には「直進（ちょくしん）」する性質があります。"},
-                    {q:"虫めがねで光を集めると？", a:["あたたかくなる","冷たくなる","色が変わる"], c:0, e:"光のエネルギーが集まって熱くなります。"},
-                    {q:"日陰と日なた、温度が高いのは？", a:["日なた","日陰","どちらも同じ"], c:0, e:"太陽の光が地面をあたためるからです。"},
-                    {q:"光を3枚の鏡で1点に集めると？", a:["とてもあたたかくなる","冷たくなる","暗くなる"], c:0, e:"光を集めるほど熱も大きくなります。"},
-                    {q:"鏡にうつった自分は？", a:["左右が反対","上下が反対","そのまま"], c:0, e:"左右が入れ替わって見えます。"}
-                ],
-                "音のせいしつ": [
-                    {q:"音が出ているとき、物はどうなってる？", a:["震えている","止まっている","光っている"], c:0, e:"振動（しんどう）が空気を伝わって音になります。"},
-                    {q:"音を大きくすると、震え方は？", a:["大きくなる","小さくなる","変わらない"], c:0, e:"振幅が大きくなると音も大きくなります。"},
-                    {q:"糸電話で音が伝わるのはなぜ？", a:["糸が震えるから","空気が通るから","糸が太いから"], c:0, e:"糸の振動が音を伝えます。"},
-                    {q:"糸電話の糸をたるませると？", a:["伝わらない","よく聞こえる","音が変わる"], c:0, e:"震えが止まってしまうので聞こえません。"},
-                    {q:"高い音と低い音、震えが速いのは？", a:["高い音","低い音","同じ"], c:0, e:"1秒間の振動数が多いほど高い音になります。"}
-                ],
-                "重さをはかろう": [
-                    {q:"形を変えると重さはどうなる？", a:["変わらない","重くなる","軽くなる"], c:0, e:"形を変えても、物質の量は変わりません。"},
-                    {q:"同じ体積の木と鉄、重いのは？", a:["鉄","木","同じ"], c:0, e:"物によって重さが違う（密度が違う）からです。"},
-                    {q:"1円玉の重さは約何グラム？", a:["1g","10g","100g"], c:0, e:"アルミニウム製でちょうど1gです。"},
-                    {q:"重さをはかる道具は？", a:["上皿てんびん","分度器","定規"], c:0, e:"重さを比べるために使います。"},
-                    {q:"粘土を細かく分けても合計は？", a:["変わらない","増える","減る"], c:0, e:"分けただけでは全体の重さは同じです。"}
-                ],
-                "磁石のふしぎ": [
-                    {q:"磁石の同じ極どうしは？", a:["しりぞけ合う","引き合う","何もおきない"], c:0, e:"NとN、SとSは反発します。"},
-                    {q:"磁石が引きつける金属は？", a:["鉄","銅","アルミニウム"], c:0, e:"すべての金属がつくわけではありません。"},
-                    {q:"磁石を水に浮かべると？", a:["北を向く","南を向く","回転し続ける"], c:0, e:"地球自体が大きな磁石だからです。"},
-                    {q:"磁石の力が一番強い場所は？", a:["端（極）","真ん中","どこでも同じ"], c:0, e:"端っこの極の部分が一番強力です。"},
-                    {q:"釘を磁石でこすり続けると？", a:["磁石になる","熱くなるだけ","溶ける"], c:0, e:"一時的に磁石の性質を持ちます。"}
-                ],
-                "電気の通り道": [
-                    {q:"回路がどうなると明かりがつく？", a:["輪のようにつながる","途切れる","電池が2個"], c:0, e:"電気が一周する通り道（回路）が必要です。"},
-                    {q:"電気を通すのは？", a:["鉄の釘","割り箸","プラスチック"], c:0, e:"金属は電気を通しやすい性質があります。"},
-                    {q:"豆電球の光る場所は？", a:["フィラメント","ガラス","口金"], c:0, e:"細い金属の線が熱くなって光ります。"},
-                    {q:"ソケットは何のために使う？", a:["豆電球をつなぐ","電池を冷やす","光を強くする"], c:0, e:"電気を豆電球に伝えやすくします。"},
-                    {q:"乾電池の出っ張っている方は？", a:["プラス極","マイナス極","北極"], c:0, e:"上がプラス、平らな方がマイナスです。"}
-                ],
-                "太陽の動き": [
-                    {q:"太陽はどっちから出る？", a:["東","西","南"], c:0, e:"東から出て、南を通り、西へ沈みます。"},
-                    {q:"影ができる向きは？", a:["太陽と反対","太陽と同じ","上"], c:0, e:"光がさえぎられるので反対側に影ができます。"},
-                    {q:"お昼ごろの太陽の高さは？", a:["一番高い","一番低い","朝と同じ"], c:0, e:"南中といって、真南にきた時が最高です。"},
-                    {q:"影が一番短い時間は？", a:["お昼ごろ","朝","夕方"], c:0, e:"太陽が高い位置にあるほど影は短くなります。"},
-                    {q:"日時計は何を利用する？", a:["影の動き","風の力","水の色"], c:0, e:"昔の人は影の動きで時間を知りました。"}
-                ],
-                "植物の育ち方": [
-                    {q:"植物の成長の順番は？", a:["芽→葉→花→実","実→花→芽","花→芽→実"], c:0, e:"まず芽が出てから順に育ちます。"},
-                    {q:"根の主な役割は？", a:["水を吸う","光を受ける","種を作る"], c:0, e:"地面から水分や栄養を吸収します。"},
-                    {q:"葉が光を受けると何ができる？", a:["栄養","水","種"], c:0, e:"光合成（こうごうせい）をして自分の体を作ります。"},
-                    {q:"ホウセンカの種はどこにできる？", a:["実の中","根","茎"], c:0, e:"花が咲いたあとに実がふくらんできます。"},
-                    {q:"冬の間、多くの植物はどうしてる？", a:["種や根で冬をこす","ずっと咲いている","消えてなくなる"], c:0, e:"次の春に向けて準備をしています。"}
+                    {q:"風を強くあてると、車はどう動く？", a:["遠くまで進む","あまり進まない","止まる"], c:0, e:"風の力が強いほど、車を動かすエネルギーが大きくなります。"},
+                    {q:"ゴムを長くのばすと、もどる力はどうなる？", a:["強くなる","弱くなる","変わらない"], c:0, e:"ゴムは長くのばすほど、強くもどろうとします。"},
+                    {q:"車を重くすると、進むきょりはどうなる？", a:["短くなる","長くなる","変わらない"], c:0, e:"重いものを動かすには、より大きな力が必要になります。"},
+                    {q:"帆（ほ）を大きくすると風の力はどうなる？", a:["大きくなる","小さくなる","変わらない"], c:0, e:"風を受ける面積が広いほど、大きな力を受け取れます。"},
+                    {q:"ゴムで動く車。ゴムを2本に増やすと？", a:["より遠くへ進む","進まなくなる","重くなる"], c:0, e:"ゴムの本数が増えると、もどる力も合わさって強くなります。"}
                 ]
+                // ※ 他の単元もデータ構造は同じです
             },
-            4: {
-                "春の生き物": [
-                    {q:"サクラの花が咲くのはいつ？", a:["春","夏","秋"], c:0, e:"気温が上がってくると開花します。"},
-                    {q:"ツバメが日本に来るのは？", a:["春","冬","秋"], c:0, e:"暖かくなると南の国からやってきます。"},
-                    {q:"冬眠から覚める動物は？", a:["カエル","ライオン","ペンギン"], c:0, e:"冬の寒い時期は土の中で眠っています。"},
-                    {q:"春に芽を出す雑草は？", a:["ナズナ","ススキ","ヒガンバナ"], c:0, e:"春の七草の一つです。"},
-                    {q:"春の気温はどう変化する？", a:["だんだん高くなる","ずっと同じ","低くなる"], c:0, e:"日差しが強まり暖かくなります。"}
-                ],
+            "4": {
                 "電気のはたらき": [
-                    {q:"電池を直列につなぐと？", a:["速くなる","遅くなる","変わらない"], c:0, e:"電流が強くなりパワーが増します。"},
-                    {q:"電池を並列につなぐと？", a:["長持ちする","速くなる","回らない"], c:0, e:"パワーは電池1個分ですが寿命が長くなります。"},
-                    {q:"電流の向きを逆にすると？", a:["モーターが逆回転する","止まる","爆発する"], c:0, e:"電気の流れに合わせて回転も変わります。"},
-                    {q:"電流の大きさをはかるのは？", a:["電流計（検流計）","電圧計","温度計"], c:0, e:"電気の流れの強さを調べます。"},
-                    {q:"光電池が発電するのはいつ？", a:["光が当たるとき","夜","風が吹くとき"], c:0, e:"太陽光などを電気に変えます。"}
-                ],
-                "月と星の動き": [
-                    {q:"月の形が変わるのはなぜ？", a:["光の当たり方が変わるから","月が削れるから","雲のせい"], c:0, e:"太陽・地球・月の位置関係で変わります。"},
-                    {q:"満月はどっちから昇る？", a:["東","西","真上"], c:0, e:"太陽と同じく東から昇ります。"},
-                    {q:"夏の大三角の一つは？", a:["ベガ","北極星","オリオン"], c:0, e:"こと座のベガ（織姫星）が含まれます。"},
-                    {q:"北極星は動く？", a:["ほとんど動かない","東から西へ","大きく回る"], c:0, e:"地球の自転軸の延長にあるので固定して見えます。"},
-                    {q:"月の表面のデコボコは？", a:["クレーター","山脈","海"], c:0, e:"隕石がぶつかった跡です。"}
-                ],
-                "体のつくりと運動": [
-                    {q:"骨と骨のつなぎ目を何という？", a:["関節","筋肉","神経"], c:0, e:"ここがあるおかげで体を曲げられます。"},
-                    {q:"腕を曲げるとき筋肉はどうなる？", a:["縮む","伸びる","消える"], c:0, e:"筋肉が縮むことで骨が引っ張られます。"},
-                    {q:"ヒトの背骨は何でできてる？", a:["たくさんの骨","1本の太い骨","軟骨だけ"], c:0, e:"小さな骨がつながってできています。"},
-                    {q:"筋肉は骨にどうついてる？", a:["腱（けん）でつく","直接つく","ついていない"], c:0, e:"丈夫な腱で骨と結ばれています。"},
-                    {q:"動物によって骨の数は？", a:["違う","全く同じ","ない"], c:0, e:"生き物の形に合わせて進化しています。"}
-                ],
-                "雨水のゆくえ": [
-                    {q:"水は高いところから？", a:["低いところへ流れる","高いところへ昇る","止まる"], c:0, e:"重力の働きで低い方へ移動します。"},
-                    {q:"地面にしみこんだ水はどうなる？", a:["地下水になる","消える","空へ戻る"], c:0, e:"土を通って地下にたまります。"},
-                    {q:"水たまりがなくなる理由は？", a:["蒸発としみこみ","太陽が食べる","土が飲む"], c:0, e:"空気中へ逃げるのと土へ入るのがあります。"},
-                    {q:"砂と粘土、水が通りやすいのは？", a:["砂","粘土","どちらも同じ"], c:0, e:"粒が大きいほど隙間があって通りやすいです。"},
-                    {q:"傾斜がある地面で水は？", a:["傾きに沿って流れる","関係なく流れる","たまらない"], c:0, e:"坂道では勢いよく流れます。"}
-                ],
-                "ものの温度と体積": [
-                    {q:"空気を温めると体積は？", a:["大きくなる","小さくなる","変わらない"], c:0, e:"空気の粒が激しく動いて広がります。"},
-                    {q:"水を温めると体積は？", a:["少し大きくなる","すごく大きくなる","小さくなる"], c:0, e:"空気ほどではありませんが膨らみます。"},
-                    {q:"鉄の玉を温めると輪を通る？", a:["通らなくなる","通りやすくなる","変化なし"], c:0, e:"金属も熱でわずかに膨らみます。"},
-                    {q:"体積の変化が一番大きいのは？", a:["空気","水","鉄"], c:0, e:"気体は温度による変化が顕著です。"},
-                    {q:"温度を下げると空気の体積は？", a:["小さくなる","大きくなる","そのまま"], c:0, e:"粒の動きが静かになって縮みます。"}
-                ],
-                "水のすがたと温度": [
-                    {q:"水が沸騰する温度は？", a:["100度","0度","50度"], c:0, e:"沸点（ふってん）といいます。"},
-                    {q:"水が氷になる温度は？", a:["0度","100度","マイナス100度"], c:0, e:"凝固点（ぎょうこてん）といいます。"},
-                    {q:"沸騰しているときに出る泡は？", a:["水蒸気","空気","酸素"], c:0, e:"水が気体になったものです。"},
-                    {q:"氷になると体積はどうなる？", a:["増える","減る","変わらない"], c:0, e:"水は例外的に凍ると膨らみます。"},
-                    {q:"湯気の正体は？", a:["小さな水滴","水蒸気","ガス"], c:0, e:"水蒸気が冷えて目に見える液体の粒になったものです。"}
-                ],
-                "冬の生き物": [
-                    {q:"冬に葉を落とす木を何という？", a:["落葉樹","常緑樹","針葉樹"], c:0, e:"水分を逃がさないように葉を落とします。"},
-                    {q:"冬の間、サクラはどうなってる？", a:["冬芽がついている","枯れている","花が咲いている"], c:0, e:"春に向けて準備をしています。"},
-                    {q:"冬に活発になる鳥は？", a:["カモ","ツバメ","カッコウ"], c:0, e:"冬鳥として北からやってきます。"},
-                    {q:"冬眠する生き物は？", a:["ヘビ","スズメ","ネコ"], c:0, e:"エネルギーを節約して眠ります。"},
-                    {q:"冬の朝、地面が白くなるのは？", a:["霜（しも）","雪","塩"], c:0, e:"空気中の水蒸気が凍ったものです。"}
+                    {q:"乾電池2個をまっすぐつなぐことを何という？", a:["直列つなぎ","並列つなぎ","交互つなぎ"], c:0, e:"＋とーを順につなぐのが直列つなぎです。"},
+                    {q:"モーターをもっと速く回すには電池をどうつなぐ？", a:["直列につなぐ","並列につなぐ","反対につなぐ"], c:0, e:"直列につなぐと電流が強くなり、パワーが増します。"},
+                    {q:"電池を並列につないだとき、電流の強さは？", a:["電池1個分と同じ","電池2個分になる","半分になる"], c:0, e:"パワーは変わりませんが、電池が長持ちします。"},
+                    {q:"電流の向きを逆にすると、プロペラの回る向きは？", a:["反対になる","止まる","変わらない"], c:0, e:"電気の流れに合わせて、モーターの回る向きも変わります。"},
+                    {q:"光電池（ソーラーパネル）が電気を作るのはいつ？", a:["光があたったとき","風が吹いたとき","夜"], c:0, e:"太陽の光などのエネルギーを電気に変えます。"}
                 ]
             },
-            5: {
+            "5": {
                 "植物の発芽": [
-                    {q:"発芽に必要な3つは？", a:["水・温度・空気","水・土・肥料","光・土・空気"], c:0, e:"土や光がなくても発芽はします。"},
-                    {q:"発芽後の成長に必要なのは？", a:["日光・肥料","暗闇","水だけ"], c:0, e:"発芽と成長では必要なものが違います。"},
-                    {q:"種の中の栄養は何？", a:["でんぷん","砂糖","脂肪"], c:0, e:"ヨウ素液で青紫になります。"},
-                    {q:"冷蔵庫に入れた種は発芽する？", a:["しない","する","早くする"], c:0, e:"適した温度が必要です。"},
-                    {q:"水に沈めすぎた種は？", a:["腐る（空気がない）","早く芽が出る","大きく育つ"], c:0, e:"呼吸するための空気が必要です。"}
-                ],
-                "メダカのたんじょう": [
-                    {q:"たまごの中に見えるのは？", a:["目や心臓","空気","足"], c:0, e:"成長するにつれてはっきり見えてきます。"},
-                    {q:"オスとメスの見分け方は？", a:["しりびれの形","目の色","口の大きさ"], c:0, e:"オスは平行四辺形に近い形です。"},
-                    {q:"生まれたばかりの子メダカの栄養は？", a:["おなかのふくろ","親が運ぶ","いらない"], c:0, e:"最初はお弁当（栄養の袋）を持って生まれてきます。"},
-                    {q:"たまごを産む場所は？", a:["水草","砂の上","親の口"], c:0, e:"ホテイアオイなどの根によく産みます。"},
-                    {q:"プランクトンは何のために必要？", a:["メダカのえさ","水の色を変える","遊び相手"], c:0, e:"小さな生き物はメダカの大切な食料です。"}
-                ],
-                "天気の変化": [
-                    {q:"天気はどっちから変わる？", a:["西から東","東から西","南から北"], c:0, e:"偏西風に乗って雲が移動します。"},
-                    {q:"雲の量で「晴れ」になるのは？", a:["8割以下","全部","1割以下"], c:0, e:"雲の割合が2〜8割なら「晴れ」です。"},
-                    {q:"台風の進路は？", a:["放物線を描く","直線","北から南"], c:0, e:"最初は北西、のちに北東へ向かうことが多いです。"},
-                    {q:"アメダスは何をはかる？", a:["降水量や気温","波の高さ","空の青さ"], c:0, e:"全国にある気象観測システムです。"},
-                    {q:"雲ができる場所は？", a:["上空の低い温度のところ","太陽の近く","宇宙"], c:0, e:"水蒸気が冷やされて雲になります。"}
-                ],
-                "ヒトのたんじょう": [
-                    {q:"赤ちゃんはどこで育つ？", a:["子宮","胃","心臓"], c:0, e:"お母さんの体の中の特別な部屋です。"},
-                    {q:"おなかの赤ちゃんと母をつなぐのは？", a:["へその緒","口","手"], c:0, e:"ここから栄養と酸素をもらいます。"},
-                    {q:"生まれるまで約何か月？", a:["10か月","3か月","24か月"], c:0, e:"約38週（10か月）で生まれてきます。"},
-                    {q:"羊水の役割は？", a:["衝撃から守る","飲み物","泳ぐ練習"], c:0, e:"赤ちゃんを守るクッションになります。"},
-                    {q:"胎盤は何のためにある？", a:["栄養の受け渡し","体温調節","おもちゃ"], c:0, e:"母体と胎児の接点になります。"}
-                ],
-                "花から実へ": [
-                    {q:"花粉がめしべにつくことを？", a:["受粉","発芽","開花"], c:0, e:"これが起きないと実ができません。"},
-                    {q:"アブラナの花びらは何枚？", a:["4枚","5枚","たくさん"], c:0, e:"十字架のような形をしています。"},
-                    {q:"ヘチマの花には何がある？", a:["お花とめ花","1種類だけ","実しかない"], c:0, e:"それぞれ役割が違います。"},
-                    {q:"花粉を運ぶ助けをするのは？", a:["虫や風","人間","雨"], c:0, e:"ミツバチなどが大きな役割を果たします。"},
-                    {q:"実の中にあるのは？", a:["種","空気","水"], c:0, e:"次世代の命が詰まっています。"}
-                ],
-                "流れる水の作用": [
-                    {q:"水の3つの作用は？", a:["浸食・運搬・堆積","沸騰・蒸発・凍結","ろ過・消毒・洗浄"], c:0, e:"削る、運ぶ、積もらせるの3つです。"},
-                    {q:"川のカーブの内側では？", a:["砂が積もる","崖が削れる","深くなる"], c:0, e:"流れが遅いので堆積（たいせき）がおきます。"},
-                    {q:"大雨のときの川の力は？", a:["強くなる","弱くなる","変わらない"], c:0, e:"水の量が増えるとパワーも増します。"},
-                    {q:"上流の石の形は？", a:["角ばっている","丸い","平ら"], c:0, e:"まだ削られていないのでゴツゴツしています。"},
-                    {q:"下流の石の大きさは？", a:["小さくなる","大きくなる","変わらない"], c:0, e:"流されるうちに削られ細かくなります。"}
-                ],
-                "ものの溶け方": [
-                    {q:"溶けて見えなくなった塩は？", a:["全体に広がっている","消えてなくなった","底に沈んでいる"], c:0, e:"透明でもしっかり存在しています。"},
-                    {q:"これ以上溶けない状態を？", a:["飽和（ほうわ）","限界","終了"], c:0, e:"溶ける量には限りがあります。"},
-                    {q:"溶けたものを取り出すには？", a:["冷やすか蒸発させる","振る","光を当てる"], c:0, e:"再結晶（さいけっしょう）といいます。"},
-                    {q:"お湯の方がよく溶けるのは？", a:["食塩よりミョウバン","何でも同じ","空気"], c:0, e:"物質によって温度の影響が違います。"},
-                    {q:"水100gに食塩20gを溶かすと？", a:["120g","100g","80g"], c:0, e:"重さは保存されます。"}
-                ],
-                "ふりこの運動": [
-                    {q:"往復する時間は何で決まる？", a:["糸の長さ","重りの重さ","振れ幅"], c:0, e:"重さや振れ幅は関係ありません。"},
-                    {q:"糸を長くすると1往復の時間は？", a:["長くなる","短くなる","変わらない"], c:0, e:"ゆっくり動くようになります。"},
-                    {q:"振れ幅を大きくしても時間は？", a:["ほとんど変わらない","すごく長くなる","短くなる"], c:0, e:"一定の法則があります。"},
-                    {q:"ブランコはふりこの一種？", a:["そう","違う","魔法"], c:0, e:"足の長さなどでリズムが変わります。"},
-                    {q:"ふりこ時計の調整はどうする？", a:["長さを変える","重くする","強く押す"], c:0, e:"長さを調節して時間を合わせます。"}
-                ],
-                "電磁石の性質": [
-                    {q:"電磁石を強くするには？", a:["電流を増やす・巻数を増やす","電池を減らす","鉄心を抜く"], c:0, e:"パワーアップの基本です。"},
-                    {q:"電磁石が普通の磁石と違うのは？", a:["電気を切ると磁力がなくなる","ずっとついている","色が違う"], c:0, e:"スイッチでON/OFFできます。"},
-                    {q:"電流を逆に流すと極は？", a:["入れ替わる","消える","爆発する"], c:0, e:"NとSが逆になります。"},
-                    {q:"中に鉄を入れるのはなぜ？", a:["磁力を強くするため","重くするため","電気を通すため"], c:0, e:"鉄心があると磁力線が集中します。"},
-                    {q:"電磁石を使った家電は？", a:["モーターやスピーカー","電子レンジ","こたつ"], c:0, e:"回転するものに多く使われます。"}
-                ],
-                "生命のつながり": [
-                    {q:"食物連鎖の始まりは？", a:["植物","ライオン","人間"], c:0, e:"太陽のエネルギーで栄養を作る植物が起点です。"},
-                    {q:"絶滅危惧種とは？", a:["いなくなる心配がある生き物","増えすぎた生き物","強い生き物"], c:0, e:"守らなければならない存在です。"},
-                    {q:"生態系を壊す原因は？", a:["外来種や環境破壊","雨","四季の変化"], c:0, e:"バランスが崩れると大変です。"},
-                    {q:"ミミズや菌の役割は？", a:["分解者","ハンター","何もしない"], c:0, e:"死骸を土に返す大切な仕事です。"},
-                    {q:"メダカが食べるアオミドロは？", a:["藻の仲間","魚の仲間","石"], c:0, e:"植物プランクトンの一種です。"}
+                    {q:"発芽（はつが）に必要な3条件は？", a:["水・空気・適した温度","水・土・肥料","光・土・空気"], c:0, e:"土や肥料、光がなくても芽は出ます。"},
+                    {q:"種の中にある栄養分は何？", a:["でんぷん","さとう","あぶら"], c:0, e:"ヨウ素液（ようそえき）をかけると青むらさき色になります。"},
+                    {q:"冷蔵庫に入れた種が芽を出さない理由は？", a:["温度が低いから","空気がないから","暗いから"], c:0, e:"芽が出るには適した温度が必要です。"},
+                    {q:"水に沈みっぱなしの種が芽を出さない理由は？", a:["空気がないから","光がないから","水が多すぎるから"], c:0, e:"植物も呼吸をするために空気が必要です。"},
+                    {q:"発芽した後の成長に必要なものは？", a:["日光と肥料","暗やみ","温度だけ"], c:0, e:"芽が出た後は、自分で栄養を作るために光が必要になります。"}
                 ]
             },
-            6: {
+            "6": {
                 "ものの燃え方": [
-                    {q:"燃えるのに必要な気体は？", a:["酸素","二酸化炭素","窒素"], c:0, e:"燃えるのを助けるはたらきがあります。"},
-                    {q:"燃えた後に増える気体は？", a:["二酸化炭素","酸素","水素"], c:0, e:"酸素が使われ、二酸化炭素が出ます。"},
-                    {q:"石灰水が白く濁る理由は？", a:["二酸化炭素に反応した","空気が入った","古くなった"], c:0, e:"二酸化炭素を確認する定番の実験です。"},
-                    {q:"ろうそくの芯が燃える理由は？", a:["ろうが液体・気体になるから","芯だけが燃える","電池"], c:0, e:"ろうが熱で溶けて吸い上げられます。"},
-                    {q:"窒素には燃やすはたらきがある？", a:["ない","ある","爆発する"], c:0, e:"空気の約8割を占めますが、燃焼は助けません。"}
-                ],
-                "ヒトの体のつくり": [
-                    {q:"心臓の役割は？", a:["血液を送る","考える","空気を吸う"], c:0, e:"全身に酸素と栄養を運びます。"},
-                    {q:"肺で交換される気体は？", a:["酸素と二酸化炭素","水素","窒素"], c:0, e:"呼吸（こきゅう）のメインイベントです。"},
-                    {q:"小腸の役割は？", a:["栄養を吸収する","声を出す","骨を作る"], c:0, e:"消化されたものを効率よく取り込みます。"},
-                    {q:"唾液に含まれる成分は？", a:["アミラーゼ","塩酸","油"], c:0, e:"でんぷんを糖に変えます。"},
-                    {q:"胃は何をする場所？", a:["食べ物を溶かす","尿を作る","血を洗う"], c:0, e:"消化液でドロドロにします。"}
-                ],
-                "植物の体と水": [
-                    {q:"水が通る管を何という？", a:["道管（どうかん）","血管","水道"], c:0, e:"根から吸い上げた水が通ります。"},
-                    {q:"葉から水蒸気が出ることを？", a:["蒸散（じょうさん）","発汗","爆発"], c:0, e:"気孔（きこう）から水が逃げます。"},
-                    {q:"光合成でできる気体は？", a:["酸素","二酸化炭素","窒素"], c:0, e:"二酸化炭素を吸って酸素を出します。"},
-                    {q:"光合成が行われる場所は？", a:["葉緑体","根","皮"], c:0, e:"葉の緑色の部分（ようりょくたい）です。"},
-                    {q:"デンプンに必要なのは？", a:["日光・水・二酸化炭素","肥料だけ","夜の時間"], c:0, e:"太陽のエネルギーが必要です。"}
-                ],
-                "生き物と食べ物": [
-                    {q:"食物連鎖とは？", a:["食う食われるの関係","料理の順番","仲良し"], c:0, e:"生命のつながり（チェーン）を示します。"},
-                    {q:"プランクトンを食べるのは？", a:["小さな魚","ライオン","ワシ"], c:0, e:"海の生態系の基礎です。"},
-                    {q:"人間は何を食べて生きている？", a:["植物も動物も","石","光"], c:0, e:"多くの命をいただいています。"},
-                    {q:"空気中の酸素を作っているのは？", a:["植物","工場","雲"], c:0, e:"光合成のおかげで私たちは息ができます。"},
-                    {q:"分解者は何をする？", a:["死骸を土に返す","獲物を捕まえる","実を作る"], c:0, e:"森の掃除屋さんです。"}
-                ],
-                "水溶液の性質": [
-                    {q:"リトマス紙が青から赤に変わるのは？", a:["酸性","アルカリ性","中性"], c:0, e:"酸性の特徴です。"},
-                    {q:"アルカリ性の水溶液は？", a:["石灰水","レモン汁","塩水"], c:0, e:"苦味があり、ぬるぬるするものが多いです。"},
-                    {q:"金属を溶かす水溶液は？", a:["塩酸","砂糖水","炭酸水"], c:0, e:"アルミニウムや鉄を激しく溶かします。"},
-                    {q:"炭酸水に溶けている気体は？", a:["二酸化炭素","酸素","笑気ガス"], c:0, e:"シュワシュワの正体です。"},
-                    {q:"中性の水溶液はどれ？", a:["食塩水","酢","石けん水"], c:0, e:"リトマス紙の色が変わりません。"}
-                ],
-                "てこのはたらき": [
-                    {q:"支点・力点・あと1つは？", a:["作用点","終点","頂点"], c:0, e:"てこの3要素です。"},
-                    {q:"小さな力で動かすには？", a:["力点を支点から遠くする","力点を支点に近づける","支点を真ん中にする"], c:0, e:"距離が長いほど有利です。"},
-                    {q:"上皿てんびんの仕組みは？", a:["てこの応用","磁石","バネ"], c:0, e:"重さを左右で吊り合わせます。"},
-                    {q:"ピンセットはどのてこ？", a:["作用点が先にある","支点がない","魔法"], c:0, e:"細かい作業に適した形です。"},
-                    {q:"てこが釣り合う条件は？", a:["重さ×距離が左右同じ","重さが同じ","長さが同じ"], c:0, e:"力のモーメント（回転させる力）が同じときです。"}
-                ],
-                "電気の利用": [
-                    {q:"電気をためる道具は？", a:["コンデンサー","スイッチ","モーター"], c:0, e:"一時的に電気を蓄えます。"},
-                    {q:"手回し発電機でできるのは？", a:["直流","交流","静電気"], c:0, e:"回す方向が同じなら直流になります。"},
-                    {q:"LEDの特徴は？", a:["消費電力が少ない","すごく熱くなる","すぐ切れる"], c:0, e:"省エネで長寿命です。"},
-                    {q:"電気を光に変えるのは？", a:["豆電球","オルゴール","ヒーター"], c:0, e:"光エネルギーへの変換です。"},
-                    {q:"センサーは何に使う？", a:["自動で電気をON/OFFする","電気を作る","色を塗る"], c:0, e:"必要な時だけ使う省エネ技術です。"}
-                ],
-                "月と太陽": [
-                    {q:"月が光って見えるのはなぜ？", a:["太陽の光を反射しているから","自ら燃えている","鏡でできている"], c:0, e:"月自身は光りません。"},
-                    {q:"月の形を変える周期は？", a:["約1か月","1年","1日"], c:0, e:"約29.5日です。"},
-                    {q:"太陽は地球の約何倍の大きさ？", a:["109倍","2倍","100万倍"], c:0, e:"圧倒的な大きさです。"},
-                    {q:"月には空気がある？", a:["ほとんどない","地球と同じ","酸素だけ"], c:0, e:"宇宙服が必要です。"},
-                    {q:"日食がおきるのはいつ？", a:["月が太陽を隠したとき","夜","雨の日"], c:0, e:"太陽・月・地球が一直線に並びます。"}
-                ],
-                "大地のつくり": [
-                    {q:"地層ができる主な原因は？", a:["水の流れ（堆積）","風","地震だけ"], c:0, e:"長い年月をかけて積もります。"},
-                    {q:"化石は何を教えてくれる？", a:["昔の環境や生き物","未来の予言","宝石の場所"], c:0, e:"大地の歴史書です。"},
-                    {q:"火山噴火で出てくるのは？", a:["溶岩や火山灰","お湯だけ","煙だけ"], c:0, e:"地球内部の熱いマグマが出てきます。"},
-                    {q:"地震の原因の一つは？", a:["プレートの動き","台風","雪"], c:0, e:"大地のひずみが限界に達して跳ね上がります。"},
-                    {q:"堆積岩はどこでできる？", a:["海や湖の底","火山の火口","空"], c:0, e:"水底で押し固められて岩になります。"}
+                    {q:"ものが燃えるのを助ける気体はどれ？", a:["酸素","窒素","二酸化炭素"], c:0, e:"酸素にはものを燃やすのを助けるはたらきがあります。"},
+                    {q:"ものが燃えた後に増える気体は？", a:["二酸化炭素","酸素","水素"], c:0, e:"酸素が使われて、二酸化炭素が発生します。"},
+                    {q:"石灰水（せっかいすい）を白くにごらせる気体は？", a:["二酸化炭素","酸素","ちっ素"], c:0, e:"二酸化炭素が含まれているか調べる実験の基本です。"},
+                    {q:"空気が入れかわらない集気びんの中のろうそくは？", a:["すぐに消える","燃え続ける","大きく燃える"], c:0, e:"新しい酸素が入ってこないと火は消えてしまいます。"},
+                    {q:"空気中に一番たくさん含まれている気体は？", a:["ちっ素","酸素","二酸化炭素"], c:0, e:"空気の約78％はちっ素です。"}
                 ]
             }
         };
 
-        /**
-         * データ管理（LocalStorage）
-         */
-        const dataStore = {
-            KEY: 'sci_hp_v1_save',
-            load() {
-                return JSON.parse(localStorage.getItem(this.KEY) || '{}');
-            },
-            save(grade, unit) {
-                const data = this.load();
-                if (!data[grade]) data[grade] = [];
-                if (!data[grade].includes(unit)) {
-                    data[grade].push(unit);
-                }
-                localStorage.setItem(this.KEY, JSON.stringify(data));
-                this.updateGlobalBadge();
-            },
-            isCompleted(grade, unit) {
-                const data = this.load();
-                return data[grade] && data[grade].includes(unit);
-            },
-            clearAll() {
-                if(confirm('これまでのクリア記録をすべて消去しますか？')){
-                    localStorage.removeItem(this.KEY);
-                    router.go('home');
-                }
-            },
-            updateGlobalBadge() {
-                const data = this.load();
-                let total = 0;
-                Object.values(data).forEach(v => total += v.length);
-                document.getElementById('total-progress-text').innerText = `現在 ${total} 単元 クリア！`;
-            }
-        };
-
-        /**
-         * クイズエンジン
-         */
-        const quizEngine = {
-            currentGrade: null,
-            currentUnit: null,
+        const app = {
+            currentGrade: "",
+            currentUnit: "",
             questions: [],
-            index: 0,
+            qIndex: 0,
             score: 0,
             isLocked: false,
 
-            init(grade, unit) {
-                this.currentGrade = grade;
-                this.currentUnit = unit;
-                this.questions = this.shuffle([...ALL_QUIZ_DATA[grade][unit]]);
-                this.index = 0;
+            showView(id) {
+                ["view-home", "view-units", "view-quiz", "view-result"].forEach(v => {
+                    document.getElementById(v).classList.add('hidden');
+                });
+                document.getElementById(id).classList.remove('hidden');
+                document.getElementById('view-container').scrollTop = 0;
+            },
+
+            showHome() {
+                this.showView('view-home');
+            },
+
+            showUnits(grade) {
+                this.currentGrade = String(grade);
+                const titleEl = document.getElementById('current-grade-title');
+                const listEl = document.getElementById('unit-list');
+                
+                titleEl.innerText = this.currentGrade + "年生の単元";
+                listEl.innerHTML = "";
+
+                const units = QUIZ_DATA[this.currentGrade];
+                if (!units) {
+                    listEl.innerHTML = "<p class='text-gray-400'>データ準備中です</p>";
+                } else {
+                    Object.keys(units).forEach(unitName => {
+                        const btn = document.createElement('button');
+                        btn.className = "unit-card w-full p-5 rounded-2xl text-left font-bold shadow-sm flex justify-between items-center bg-white hover:bg-green-50 active:scale-95 transition-all";
+                        btn.innerHTML = `<span>${unitName}</span><span class='text-green-400'>▶</span>`;
+                        btn.onclick = () => this.startQuiz(unitName);
+                        listEl.appendChild(btn);
+                    });
+                }
+                this.showView('view-units');
+            },
+
+            startQuiz(unitName) {
+                this.currentUnit = unitName;
+                const source = QUIZ_DATA[this.currentGrade][unitName];
+                this.questions = [...source].sort(() => Math.random() - 0.5);
+                this.qIndex = 0;
                 this.score = 0;
                 this.isLocked = false;
-                this.render();
+                this.renderQuestion();
+                this.showView('view-quiz');
             },
 
-            shuffle(arr) {
-                for (let i = arr.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [arr[i], arr[j]] = [arr[j], arr[i]];
-                }
-                return arr;
-            },
+            renderQuestion() {
+                const q = this.questions[this.qIndex];
+                document.getElementById('quiz-progress').innerText = `${this.qIndex + 1} / ${this.questions.length}`;
+                document.getElementById('quiz-score').innerText = `${this.score}点`;
+                document.getElementById('question-text').innerText = q.q;
+                document.getElementById('feedback-area').classList.add('hidden');
+                
+                const container = document.getElementById('options-container');
+                container.innerHTML = "";
+                this.isLocked = false;
 
-            render() {
-                const q = this.questions[this.index];
-                document.getElementById('quiz-count').innerText = `${this.index + 1} / ${this.questions.length}`;
-                document.getElementById('quiz-current-score').innerText = `${this.score} 点`;
-                document.getElementById('question-text').innerHTML = q.q;
-                
-                const grid = document.getElementById('options-grid');
-                grid.innerHTML = '';
-                
                 // 選択肢のシャッフル
-                const choices = q.a.map((t, i) => ({ t, isC: i === q.c }));
-                this.shuffle(choices);
+                const opts = q.a.map((text, idx) => ({ text, isCorrect: idx === q.c }));
+                opts.sort(() => Math.random() - 0.5);
 
-                choices.forEach(choice => {
-                    const b = document.createElement('button');
-                    b.className = "opt-btn btn-push w-full p-4 bg-white border-2 border-gray-100 rounded-2xl font-bold text-left hover:border-green-300 transition-colors";
-                    b.innerHTML = choice.t;
-                    b.onclick = () => this.check(choice.isC, b);
-                    grid.appendChild(b);
+                opts.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.className = "w-full p-4 bg-white border-2 border-gray-200 rounded-xl font-bold text-left hover:border-green-400 transition-colors";
+                    btn.innerText = opt.text;
+                    btn.onclick = () => this.checkAnswer(opt.isCorrect, btn);
+                    container.appendChild(btn);
                 });
-
-                document.getElementById('feedback-box').classList.add('hidden');
             },
 
-            check(isCorrect, btn) {
+            checkAnswer(isCorrect, btn) {
                 if (this.isLocked) return;
                 this.isLocked = true;
 
-                const q = this.questions[this.index];
-                const icon = document.getElementById('feedback-icon');
-                const box = document.getElementById('feedback-box');
-                
-                // すべてのボタンを無効化
-                document.querySelectorAll('.opt-btn').forEach(b => {
-                    b.disabled = true;
+                // 他のボタンを無効化
+                const btns = document.getElementById('options-container').querySelectorAll('button');
+                btns.forEach(b => {
                     b.style.opacity = "0.5";
+                    b.disabled = true;
                 });
-                
                 btn.style.opacity = "1";
+
+                const label = document.getElementById('result-label');
                 if (isCorrect) {
                     this.score += 20;
-                    icon.innerText = "⭕️ せいかい！";
-                    icon.className = "text-center font-black text-4xl mb-4 text-green-500 animate-bounce";
+                    label.innerText = "⭕ 正解！";
+                    label.className = "text-center text-3xl font-bold mb-2 text-green-500";
                     btn.classList.add('border-green-500', 'bg-green-50');
                 } else {
-                    icon.innerText = "❌ まちがい...";
-                    icon.className = "text-center font-black text-4xl mb-4 text-red-500";
+                    label.innerText = "❌ まちがい";
+                    label.className = "text-center text-3xl font-bold mb-2 text-red-500";
                     btn.classList.add('border-red-500', 'bg-red-50');
                 }
 
-                document.getElementById('explanation-text').innerText = q.e;
-                box.classList.remove('hidden');
-                
-                // 自動スクロール
-                setTimeout(() => {
-                    box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                }, 100);
+                document.getElementById('explanation-text').innerText = this.questions[this.qIndex].e;
+                document.getElementById('feedback-area').classList.remove('hidden');
             },
 
-            next() {
-                this.index++;
-                if (this.index < this.questions.length) {
-                    this.isLocked = false;
-                    this.render();
+            nextQuestion() {
+                this.qIndex++;
+                if (this.qIndex < this.questions.length) {
+                    this.renderQuestion();
                 } else {
-                    router.go('result');
-                }
-            }
-        };
-
-        /**
-         * ルーター（画面遷移）
-         */
-        const router = {
-            views: {
-                home: document.getElementById('view-home'),
-                unit: document.getElementById('view-unit'),
-                quiz: document.getElementById('view-quiz'),
-                result: document.getElementById('view-result')
-            },
-
-            go(viewName, params = {}) {
-                // すべて隠す
-                Object.values(this.views).forEach(v => v.classList.add('hidden'));
-                
-                // 対象を表示
-                const target = this.views[viewName];
-                target.classList.remove('hidden');
-                document.getElementById('main-view').scrollTop = 0;
-
-                // 画面ごとの処理
-                if (viewName === 'grade') {
-                    this.renderUnitSelection(params.g);
-                } else if (viewName === 'quiz') {
-                    quizEngine.init(params.g, params.u);
-                } else if (viewName === 'result') {
-                    this.renderResult();
-                } else if (viewName === 'home') {
-                    dataStore.updateGlobalBadge();
+                    this.showResult();
                 }
             },
 
-            renderUnitSelection(grade) {
-                const target = this.views.unit;
-                target.classList.remove('hidden');
-                
-                document.getElementById('grade-label').innerText = `${grade}年生`;
-                const units = Object.keys(ALL_QUIZ_DATA[grade]);
-                const completedCount = (dataStore.load()[grade] || []).length;
-                document.getElementById('grade-progress-badge').innerText = `達成: ${completedCount} / ${units.length}`;
-
-                const grid = document.getElementById('unit-grid');
-                grid.innerHTML = '';
-
-                units.forEach(u => {
-                    const done = dataStore.isCompleted(grade, u);
-                    const b = document.createElement('button');
-                    b.className = `btn-push w-full p-5 border-2 rounded-3xl text-left font-bold flex items-center justify-between transition-all ${done ? 'bg-yellow-50 border-yellow-400 shadow-[0_4px_0_#facc15]' : 'bg-white border-green-100 hover:border-green-400'}`;
-                    b.innerHTML = `
-                        <span class="flex flex-col">
-                            <span class="text-[10px] opacity-50">${done ? 'COMPLETE' : 'UNFINISHED'}</span>
-                            <span class="${done ? 'text-yellow-800' : 'text-gray-700'}">${u}</span>
-                        </span>
-                        ${done ? '<span class="text-2xl">👑</span>' : '<span class="text-xl text-green-200">▶︎</span>'}
-                    `;
-                    b.onclick = () => this.go('quiz', { g: grade, u: u });
-                    grid.appendChild(b);
-                });
-            },
-
-            renderResult() {
-                const score = quizEngine.score;
+            showResult() {
+                document.getElementById('final-score').innerText = this.score + "点";
+                const msg = document.getElementById('result-msg');
                 const emoji = document.getElementById('result-emoji');
-                const scoreVal = document.getElementById('result-score-val');
-                const msg = document.getElementById('result-message');
-
-                scoreVal.innerText = `${score} 点`;
                 
-                if (score === 100) {
-                    emoji.innerText = "🏆";
-                    msg.innerText = "すごすぎる！全問正解だ！この単元は完ぺきだね。";
-                    dataStore.save(quizEngine.currentGrade, quizEngine.currentUnit);
-                } else if (score >= 60) {
+                if (this.score === 100) {
+                    emoji.innerText = "👑";
+                    msg.innerText = "すごい！満点です！この単元はばっちりだね。";
+                } else if (this.score >= 60) {
                     emoji.innerText = "🎉";
-                    msg.innerText = "おめでとう！あともう少しで満点だ。次は100点を目指そう！";
+                    msg.innerText = "合格点！あと少しで満点だ。もう一度やってみる？";
                 } else {
-                    emoji.innerText = "🌱";
-                    msg.innerText = "おつかれさま！もう一度復習して、次はもっといい点数をとろう。";
+                    emoji.innerText = "💪";
+                    msg.innerText = "がんばったね。解説を読んで、もう一度挑戦しよう！";
                 }
+                this.showView('view-result');
             }
         };
 
-        // 初期化
-        window.onload = () => {
-            dataStore.updateGlobalBadge();
-        };
-
+        // 初期表示
+        window.onload = () => app.showHome();
     </script>
 </body>
 </html>
